@@ -1,7 +1,7 @@
 # Golang MediatR
 This package is a `Mediator Pattern` implementation in golang, and inspired by great [jbogard/MediatR](https://github.com/jbogard/MediatR) library in .Net.
 
-For decoupling some objects in a system we could use in `Mediator` class for decrease coupling between the classes. Mostly I uses this pattern when I use CQRS in my system.
+For decoupling some objects in a system we could use `Mediator` object as an interface, for decrease coupling between the objects. Mostly I uses this pattern when I use CQRS in my system.
 
 ## Registering Handlers 
 
