@@ -1,14 +1,15 @@
 package api
 
 import (
-	"github.com/go-playground/validator"
-	"github.com/labstack/echo/v4"
 	"mediatR"
 	"mediatR/examples/cqrs/internal/products/features/creating_product"
 	creating_products_dtos "mediatR/examples/cqrs/internal/products/features/creating_product/dtos"
 	"mediatR/examples/cqrs/internal/products/features/getting_product_by_id"
 	getting_product_by_id_dtos "mediatR/examples/cqrs/internal/products/features/getting_product_by_id/dtos"
 	"net/http"
+
+	"github.com/go-playground/validator"
+	"github.com/labstack/echo/v4"
 )
 
 type ProductsController struct {
@@ -41,7 +42,7 @@ func (pc *ProductsController) createProduct() echo.HandlerFunc {
 			return err
 		}
 
-		command := creating_product.NewCreateProduct(request.Name, request.Description, request.Price)
+		command := creating_product.NewCreateProductCommand(request.Name, request.Description, request.Price)
 		result, err := mediatR.Send[*creating_products_dtos.CreateProductResponseDto](ctx.Request().Context(), command)
 
 		if err != nil {
@@ -69,7 +70,7 @@ func (pc *ProductsController) getProductByID() echo.HandlerFunc {
 			return err
 		}
 
-		query := getting_product_by_id.NewGetProductById(request.ProductId)
+		query := getting_product_by_id.NewGetProductByIdQuery(request.ProductId)
 
 		if err := pc.validator.StructCtx(ctx.Request().Context(), query); err != nil {
 			return err

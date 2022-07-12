@@ -7,15 +7,15 @@ import (
 	"mediatR/examples/cqrs/internal/products/repository"
 )
 
-type CreateProductHandler struct {
+type CreateProductCommandHandler struct {
 	productRepository *repository.InMemoryProductRepository
 }
 
-func NewCreateProductHandler(productRepository *repository.InMemoryProductRepository) *CreateProductHandler {
-	return &CreateProductHandler{productRepository: productRepository}
+func NewCreateProductCommandHandler(productRepository *repository.InMemoryProductRepository) *CreateProductCommandHandler {
+	return &CreateProductCommandHandler{productRepository: productRepository}
 }
 
-func (c *CreateProductHandler) Handle(ctx context.Context, command *CreateProduct) (*creating_product_dtos.CreateProductResponseDto, error) {
+func (c *CreateProductCommandHandler) Handle(ctx context.Context, command *CreateProductCommand) (*creating_product_dtos.CreateProductResponseDto, error) {
 
 	product := &models.Product{
 		ProductID:   command.ProductID,

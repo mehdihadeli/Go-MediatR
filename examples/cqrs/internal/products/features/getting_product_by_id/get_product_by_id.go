@@ -4,10 +4,10 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-type GetProductById struct {
+type GetProductByIdQuery struct {
 	ProductID uuid.UUID `validate:"required"`
 }
 
-func NewGetProductById(productID uuid.UUID) *GetProductById {
-	return &GetProductById{ProductID: productID}
+func NewGetProductByIdQuery(productID uuid.UUID) *GetProductByIdQuery {
+	return &GetProductByIdQuery{ProductID: productID}
 }

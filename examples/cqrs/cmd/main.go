@@ -2,20 +2,21 @@ package main
 
 import (
 	"context"
-	"github.com/labstack/echo/v4"
-	echoSwagger "github.com/swaggo/echo-swagger"
 	"log"
 	"mediatR"
 	"mediatR/examples/cqrs/docs"
 	product_api "mediatR/examples/cqrs/internal/products/api"
-	creating_product2 "mediatR/examples/cqrs/internal/products/features/creating_product"
+	creating_product "mediatR/examples/cqrs/internal/products/features/creating_product"
 	creating_products_dtos "mediatR/examples/cqrs/internal/products/features/creating_product/dtos"
-	getting_product_by_id2 "mediatR/examples/cqrs/internal/products/features/getting_product_by_id"
+	getting_product_by_id "mediatR/examples/cqrs/internal/products/features/getting_product_by_id"
 	getting_product_by_id_dtos "mediatR/examples/cqrs/internal/products/features/getting_product_by_id/dtos"
 	"mediatR/examples/cqrs/internal/products/repository"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/labstack/echo/v4"
+	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
 //swag init --parseDependency --parseInternal --parseDepth 1 -g ./cmd/main.go
@@ -27,16 +28,16 @@ func main() {
 	echo := echo.New()
 	productRepository := repository.NewInMemoryProductRepository()
 
-	createProductCommandHandler := creating_product2.NewCreateProductHandler(productRepository)
-	getByIdQueryHandler := getting_product_by_id2.NewGetProductByIdHandler(productRepository)
+	createProductCommandHandler := creating_product.NewCreateProductCommandHandler(productRepository)
+	getByIdQueryHandler := getting_product_by_id.NewGetProductByIdHandler(productRepository)
 
 	// Register handlers to the mediatR
-	err := mediatR.RegisterHandler[*creating_product2.CreateProduct, *creating_products_dtos.CreateProductResponseDto](createProductCommandHandler)
+	err := mediatR.RegisterHandler[*creating_product.CreateProductCommand, *creating_products_dtos.CreateProductResponseDto](createProductCommandHandler)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = mediatR.RegisterHandler[*getting_product_by_id2.GetProductById, *getting_product_by_id_dtos.GetProductByIdResponseDto](getByIdQueryHandler)
+	err = mediatR.RegisterHandler[*getting_product_by_id.GetProductByIdQuery, *getting_product_by_id_dtos.GetProductByIdResponseDto](getByIdQueryHandler)
 	if err != nil {
 		log.Fatal(err)
 	}

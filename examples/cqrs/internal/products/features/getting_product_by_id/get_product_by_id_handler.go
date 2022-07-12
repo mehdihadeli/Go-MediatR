@@ -3,21 +3,22 @@ package getting_product_by_id
 import (
 	"context"
 	"fmt"
-	"github.com/pkg/errors"
 	"mediatR/examples/cqrs/internal/products"
 	getting_product_by_id_dtos "mediatR/examples/cqrs/internal/products/features/getting_product_by_id/dtos"
 	"mediatR/examples/cqrs/internal/products/repository"
+
+	"github.com/pkg/errors"
 )
 
-type GetProductByIdHandler struct {
+type GetProductByIdQueryHandler struct {
 	productRepository *repository.InMemoryProductRepository
 }
 
-func NewGetProductByIdHandler(productRepository *repository.InMemoryProductRepository) *GetProductByIdHandler {
-	return &GetProductByIdHandler{productRepository: productRepository}
+func NewGetProductByIdHandler(productRepository *repository.InMemoryProductRepository) *GetProductByIdQueryHandler {
+	return &GetProductByIdQueryHandler{productRepository: productRepository}
 }
 
-func (q *GetProductByIdHandler) Handle(ctx context.Context, query *GetProductById) (*getting_product_by_id_dtos.GetProductByIdResponseDto, error) {
+func (q *GetProductByIdQueryHandler) Handle(ctx context.Context, query *GetProductByIdQuery) (*getting_product_by_id_dtos.GetProductByIdResponseDto, error) {
 	product, err := q.productRepository.GetProductById(ctx, query.ProductID)
 
 	if err != nil {
