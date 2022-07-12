@@ -1,4 +1,4 @@
-package products
+package repository
 
 import (
 	"context"
@@ -17,7 +17,7 @@ func NewInMemoryProductRepository() *InMemoryProductRepository {
 
 func (p *InMemoryProductRepository) CreateProduct(ctx context.Context, product *models.Product) (*models.Product, error) {
 
-	_ = append(products, product)
+	products = append(products, product)
 
 	return product, nil
 }

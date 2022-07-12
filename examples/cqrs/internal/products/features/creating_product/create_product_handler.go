@@ -2,16 +2,16 @@ package creating_product
 
 import (
 	"context"
-	"mediatR/examples/cqrs/internal/products"
 	creating_product_dtos "mediatR/examples/cqrs/internal/products/features/creating_product/dtos"
 	"mediatR/examples/cqrs/internal/products/models"
+	"mediatR/examples/cqrs/internal/products/repository"
 )
 
 type CreateProductHandler struct {
-	productRepository *products.InMemoryProductRepository
+	productRepository *repository.InMemoryProductRepository
 }
 
-func NewCreateProductHandler(productRepository *products.InMemoryProductRepository) *CreateProductHandler {
+func NewCreateProductHandler(productRepository *repository.InMemoryProductRepository) *CreateProductHandler {
 	return &CreateProductHandler{productRepository: productRepository}
 }
 

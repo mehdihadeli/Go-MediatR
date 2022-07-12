@@ -7,12 +7,12 @@ import (
 	"log"
 	"mediatR"
 	"mediatR/examples/cqrs/docs"
-	"mediatR/examples/cqrs/internal/products"
 	product_api "mediatR/examples/cqrs/internal/products/api"
 	creating_product2 "mediatR/examples/cqrs/internal/products/features/creating_product"
 	creating_products_dtos "mediatR/examples/cqrs/internal/products/features/creating_product/dtos"
 	getting_product_by_id2 "mediatR/examples/cqrs/internal/products/features/getting_product_by_id"
 	getting_product_by_id_dtos "mediatR/examples/cqrs/internal/products/features/getting_product_by_id/dtos"
+	"mediatR/examples/cqrs/internal/products/repository"
 	"os"
 	"os/signal"
 	"syscall"
@@ -25,7 +25,7 @@ func main() {
 	defer cancel()
 
 	echo := echo.New()
-	productRepository := products.NewInMemoryProductRepository()
+	productRepository := repository.NewInMemoryProductRepository()
 
 	createProductCommandHandler := creating_product2.NewCreateProductHandler(productRepository)
 	getByIdQueryHandler := getting_product_by_id2.NewGetProductByIdHandler(productRepository)
