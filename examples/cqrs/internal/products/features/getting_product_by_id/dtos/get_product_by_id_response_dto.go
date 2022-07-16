@@ -1,7 +1,7 @@
 package dtos
 
 import (
-	"mediatR/examples/cqrs/internal/products/dtos"
+	"mediatr/examples/cqrs/internal/products/dtos"
 )
 
 type GetProductByIdResponseDto struct {

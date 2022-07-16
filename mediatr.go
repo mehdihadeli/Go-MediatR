@@ -1,4 +1,4 @@
-package mediatR
+package mediatr
 
 import (
 	"context"

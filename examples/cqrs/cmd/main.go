@@ -3,14 +3,14 @@ package main
 import (
 	"context"
 	"log"
-	"mediatR"
-	"mediatR/examples/cqrs/docs"
-	product_api "mediatR/examples/cqrs/internal/products/api"
-	creating_product "mediatR/examples/cqrs/internal/products/features/creating_product"
-	creating_products_dtos "mediatR/examples/cqrs/internal/products/features/creating_product/dtos"
-	getting_product_by_id "mediatR/examples/cqrs/internal/products/features/getting_product_by_id"
-	getting_product_by_id_dtos "mediatR/examples/cqrs/internal/products/features/getting_product_by_id/dtos"
-	"mediatR/examples/cqrs/internal/products/repository"
+	"mediatr"
+	"mediatr/examples/cqrs/docs"
+	product_api "mediatr/examples/cqrs/internal/products/api"
+	creating_product "mediatr/examples/cqrs/internal/products/features/creating_product"
+	creating_products_dtos "mediatr/examples/cqrs/internal/products/features/creating_product/dtos"
+	getting_product_by_id "mediatr/examples/cqrs/internal/products/features/getting_product_by_id"
+	getting_product_by_id_dtos "mediatr/examples/cqrs/internal/products/features/getting_product_by_id/dtos"
+	"mediatr/examples/cqrs/internal/products/repository"
 	"os"
 	"os/signal"
 	"syscall"
@@ -31,13 +31,13 @@ func main() {
 	createProductCommandHandler := creating_product.NewCreateProductCommandHandler(productRepository)
 	getByIdQueryHandler := getting_product_by_id.NewGetProductByIdHandler(productRepository)
 
-	// Register handlers to the mediatR
-	err := mediatR.RegisterHandler[*creating_product.CreateProductCommand, *creating_products_dtos.CreateProductResponseDto](createProductCommandHandler)
+	// Register handlers to the mediatr
+	err := mediatr.RegisterHandler[*creating_product.CreateProductCommand, *creating_products_dtos.CreateProductResponseDto](createProductCommandHandler)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = mediatR.RegisterHandler[*getting_product_by_id.GetProductByIdQuery, *getting_product_by_id_dtos.GetProductByIdResponseDto](getByIdQueryHandler)
+	err = mediatr.RegisterHandler[*getting_product_by_id.GetProductByIdQuery, *getting_product_by_id_dtos.GetProductByIdResponseDto](getByIdQueryHandler)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -2,8 +2,9 @@ package repository
 
 import (
 	"context"
+	"mediatr/examples/cqrs/internal/products/models"
+
 	uuid "github.com/satori/go.uuid"
-	"mediatR/examples/cqrs/internal/products/models"
 )
 
 type InMemoryProductRepository struct {

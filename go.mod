@@ -1,4 +1,4 @@
-module mediatR
+module mediatr
 
 go 1.18
 

@@ -1,11 +1,11 @@
 package api
 
 import (
-	"mediatR"
-	"mediatR/examples/cqrs/internal/products/features/creating_product"
-	creating_products_dtos "mediatR/examples/cqrs/internal/products/features/creating_product/dtos"
-	"mediatR/examples/cqrs/internal/products/features/getting_product_by_id"
-	getting_product_by_id_dtos "mediatR/examples/cqrs/internal/products/features/getting_product_by_id/dtos"
+	"mediatr"
+	"mediatr/examples/cqrs/internal/products/features/creating_product"
+	creating_products_dtos "mediatr/examples/cqrs/internal/products/features/creating_product/dtos"
+	"mediatr/examples/cqrs/internal/products/features/getting_product_by_id"
+	getting_product_by_id_dtos "mediatr/examples/cqrs/internal/products/features/getting_product_by_id/dtos"
 	"net/http"
 
 	"github.com/go-playground/validator"
@@ -43,7 +43,7 @@ func (pc *ProductsController) createProduct() echo.HandlerFunc {
 		}
 
 		command := creating_product.NewCreateProductCommand(request.Name, request.Description, request.Price)
-		result, err := mediatR.Send[*creating_products_dtos.CreateProductResponseDto](ctx.Request().Context(), command)
+		result, err := mediatr.Send[*creating_products_dtos.CreateProductResponseDto](ctx.Request().Context(), command)
 
 		if err != nil {
 			return err
@@ -76,7 +76,7 @@ func (pc *ProductsController) getProductByID() echo.HandlerFunc {
 			return err
 		}
 
-		queryResult, err := mediatR.Send[*getting_product_by_id_dtos.GetProductByIdResponseDto](ctx.Request().Context(), query)
+		queryResult, err := mediatr.Send[*getting_product_by_id_dtos.GetProductByIdResponseDto](ctx.Request().Context(), query)
 
 		if err != nil {
 			return err

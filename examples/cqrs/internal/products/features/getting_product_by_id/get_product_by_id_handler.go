@@ -3,9 +3,9 @@ package getting_product_by_id
 import (
 	"context"
 	"fmt"
-	"mediatR/examples/cqrs/internal/products"
-	getting_product_by_id_dtos "mediatR/examples/cqrs/internal/products/features/getting_product_by_id/dtos"
-	"mediatR/examples/cqrs/internal/products/repository"
+	"mediatr/examples/cqrs/internal/products"
+	getting_product_by_id_dtos "mediatr/examples/cqrs/internal/products/features/getting_product_by_id/dtos"
+	"mediatr/examples/cqrs/internal/products/repository"
 
 	"github.com/pkg/errors"
 )

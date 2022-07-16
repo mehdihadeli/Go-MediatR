@@ -1,5 +1,12 @@
-# Golang MediatR
-This package is a `Mediator Pattern` implementation in golang, and inspired by great [jbogard/MediatR](https://github.com/jbogard/MediatR) library in .Net.
+# 🚃 Golang MediatR
+
+[![CI](https://github.com/mehdihadeli/Go-MediatR/actions/workflows/ci.yml/badge.svg?branch=main&style=flat-square)](https://github.com/mehdihadeli/Go-MediatR/actions/workflows/ci.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/mehdihadeli/Go-MediatR)](https://goreportcard.com/report/github.com/mehdihadeli/Go-MediatR)
+![Go Version](https://img.shields.io/badge/go%20version-%3E=1.18-61CFDD.svg?style=flat-square)
+[![](https://godoc.org/github.com/mehdihadeli/Go-MediatR?status.svg)](https://pkg.go.dev/github.com/mehdihadeli/Go-MediatR)
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg)](github.com/mehdihadeli/Go-MediatR/blob/main/LICENSE.md)
+
+This package is a `Mediator Pattern` implementation in golang, and inspired by great [jbogard/mediatr](https://github.com/jbogard/mediatr) library in .Net.
 
 For decoupling some objects in a system we could use `Mediator` object as an interface, for decrease coupling between the objects. Mostly I uses this pattern when I use CQRS in my system.
 
@@ -47,19 +54,19 @@ func (c *CreateProductCommandHandler) Handle(ctx context.Context, command *Creat
 	return response, nil
 }
 
-// Registering Command Handler to the mediatR
+// Registering Command Handler to the mediatr
 
-mediatR.RegisterHandler[*creating_product.CreateProduct, *creating_products_dtos.CreateProductResponseDto](createProductCommandHandler)
+mediatr.RegisterHandler[*creating_product.CreateProduct, *creating_products_dtos.CreateProductResponseDto](createProductCommandHandler)
 
 ```
 
 ## Sending Request
 
 ``` go
-// Sending command to mediatR for routing to the corresponding command handler
+// Sending command to mediatr for routing to the corresponding command handler
 
 command := creating_product.NewCreateProductCommand(request.Name, request.Description, request.Price)
-mediatR.Send[*creating_products_dtos.CreateProductResponseDto](ctx.Request().Context(), command)
+mediatr.Send[*creating_products_dtos.CreateProductResponseDto](ctx.Request().Context(), command)
 ```
 
 ## Using Pipeline Behaviors
