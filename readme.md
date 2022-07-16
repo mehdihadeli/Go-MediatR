@@ -4,7 +4,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/mehdihadeli/Go-MediatR)](https://goreportcard.com/report/github.com/mehdihadeli/Go-MediatR)
 ![Go Version](https://img.shields.io/badge/go%20version-%3E=1.18-61CFDD.svg?style=flat-square)
 [![](https://godoc.org/github.com/mehdihadeli/Go-MediatR?status.svg)](https://pkg.go.dev/github.com/mehdihadeli/Go-MediatR)
-[![license](https://img.shields.io/github/license/mashape/apistatus.svg)](github.com/mehdihadeli/Go-MediatR/blob/main/LICENSE.md)
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/mehdihadeli/Go-MediatR/blob/main/LICENCE)
 
 This package is a `Mediator Pattern` implementation in golang, and inspired by great [jbogard/mediatr](https://github.com/jbogard/mediatr) library in .Net.
 
