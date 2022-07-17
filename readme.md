@@ -10,6 +10,12 @@ This package is a `Mediator Pattern` implementation in golang, and inspired by g
 
 For decoupling some objects in a system we could use `Mediator` object as an interface, for decrease coupling between the objects. Mostly I uses this pattern when I use CQRS in my system.
 
+## Installation
+
+```bash
+go get github.com/mehdihadeli/Go-MediatR
+```
+
 ## Registering Handlers 
 
 ``` go
