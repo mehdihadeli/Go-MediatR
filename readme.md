@@ -13,7 +13,7 @@ For decoupling some objects in a system we could use `Mediator` object as an int
 ## Installation
 
 ```bash
-go get github.com/mehdihadeli/Go-MediatR
+go get github.com/mehdihadeli/mediatr
 ```
 
 ## Registering Handlers 
