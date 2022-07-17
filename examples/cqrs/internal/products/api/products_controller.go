@@ -1,11 +1,11 @@
 package api
 
 import (
-	"mediatr"
-	"mediatr/examples/cqrs/internal/products/features/creating_product"
-	creating_products_dtos "mediatr/examples/cqrs/internal/products/features/creating_product/dtos"
-	"mediatr/examples/cqrs/internal/products/features/getting_product_by_id"
-	getting_product_by_id_dtos "mediatr/examples/cqrs/internal/products/features/getting_product_by_id/dtos"
+	"github.com/mehdihadeli/Go-MediatR"
+	"github.com/mehdihadeli/Go-MediatR/examples/cqrs/internal/products/features/creating_product"
+	creating_products_dtos "github.com/mehdihadeli/Go-MediatR/examples/cqrs/internal/products/features/creating_product/dtos"
+	"github.com/mehdihadeli/Go-MediatR/examples/cqrs/internal/products/features/getting_product_by_id"
+	getting_product_by_id_dtos "github.com/mehdihadeli/Go-MediatR/examples/cqrs/internal/products/features/getting_product_by_id/dtos"
 	"net/http"
 
 	"github.com/go-playground/validator"

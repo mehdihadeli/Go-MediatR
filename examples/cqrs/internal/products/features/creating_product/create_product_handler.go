@@ -2,9 +2,9 @@ package creating_product
 
 import (
 	"context"
-	creating_product_dtos "mediatr/examples/cqrs/internal/products/features/creating_product/dtos"
-	"mediatr/examples/cqrs/internal/products/models"
-	"mediatr/examples/cqrs/internal/products/repository"
+	creating_product_dtos "github.com/mehdihadeli/Go-MediatR/examples/cqrs/internal/products/features/creating_product/dtos"
+	"github.com/mehdihadeli/Go-MediatR/examples/cqrs/internal/products/models"
+	"github.com/mehdihadeli/Go-MediatR/examples/cqrs/internal/products/repository"
 )
 
 type CreateProductCommandHandler struct {
