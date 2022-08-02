@@ -2,13 +2,13 @@ package main
 
 import (
 	"context"
-	mediatr "github.com/mehdihadeli/mediatr"
+	"github.com/mehdihadeli/mediatr"
 	"github.com/mehdihadeli/mediatr/examples/cqrs/docs"
-	product_api "github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/api"
+	productApi "github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/api"
 	"github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/creating_product"
-	creating_products_dtos "github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/creating_product/dtos"
+	creatingProductsDtos "github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/creating_product/dtos"
 	"github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/getting_product_by_id"
-	getting_product_by_id_dtos "github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/getting_product_by_id/dtos"
+	gettingProductByIdDtos "github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/getting_product_by_id/dtos"
 	"github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/repository"
 	"log"
 	"os"
@@ -28,23 +28,23 @@ func main() {
 	echo := echo.New()
 	productRepository := repository.NewInMemoryProductRepository()
 
-	createProductCommandHandler := creating_product.NewCreateProductCommandHandler(productRepository)
-	getByIdQueryHandler := getting_product_by_id.NewGetProductByIdHandler(productRepository)
+	createProductCommandHandler := creatingProduct.NewCreateProductCommandHandler(productRepository)
+	getByIdQueryHandler := gettingProductById.NewGetProductByIdHandler(productRepository)
 
 	// Register handlers to the mediatr
-	err := mediatr.RegisterHandler[*creating_product.CreateProductCommand, *creating_products_dtos.CreateProductResponseDto](createProductCommandHandler)
+	err := mediatr.RegisterRequestHandler[*creatingProduct.CreateProductCommand, *creatingProductsDtos.CreateProductCommandResponse](createProductCommandHandler)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = mediatr.RegisterHandler[*getting_product_by_id.GetProductByIdQuery, *getting_product_by_id_dtos.GetProductByIdResponseDto](getByIdQueryHandler)
+	err = mediatr.RegisterRequestHandler[*gettingProductById.GetProductByIdQuery, *gettingProductByIdDtos.GetProductByIdQueryResponse](getByIdQueryHandler)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	controller := product_api.NewProductsController(echo)
+	controller := productApi.NewProductsController(echo)
 
-	product_api.MapProductsRoutes(echo, controller)
+	productApi.MapProductsRoutes(echo, controller)
 
 	docs.SwaggerInfo.Version = "1.0"
 	docs.SwaggerInfo.Title = "Catalogs Write-Service Api"
@@ -53,7 +53,7 @@ func main() {
 	echo.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	go func() {
-		if err := echo.Start(":9090"); err != nil {
+		if err := echo.Start(":9080"); err != nil {
 			log.Fatalf("Error starting Server: ", err)
 		}
 	}()

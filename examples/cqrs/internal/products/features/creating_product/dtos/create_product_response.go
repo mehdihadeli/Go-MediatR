@@ -2,6 +2,6 @@ package dtos
 
 import uuid "github.com/satori/go.uuid"
 
-type CreateProductResponseDto struct {
+type CreateProductCommandResponse struct {
 	ProductID uuid.UUID `json:"productId"`
 }

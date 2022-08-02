@@ -3,9 +3,9 @@ package api
 import (
 	"github.com/mehdihadeli/mediatr"
 	"github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/creating_product"
-	creating_products_dtos "github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/creating_product/dtos"
+	creatingProductsDtos "github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/creating_product/dtos"
 	"github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/getting_product_by_id"
-	getting_product_by_id_dtos "github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/getting_product_by_id/dtos"
+	gettingProductByIdDtos "github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/getting_product_by_id/dtos"
 	"net/http"
 
 	"github.com/go-playground/validator"
@@ -27,13 +27,13 @@ func NewProductsController(echo *echo.Echo) *ProductsController {
 // @Description Create new product item
 // @Accept json
 // @Produce json
-// @Param CreateProductRequestDto body creating_products_dtos.CreateProductRequestDto true "Product data"
-// @Success 201 {object} creating_products_dtos.CreateProductResponseDto
+// @Param CreateProductRequestDto body creatingProductsDtos.CreateProductRequestDto true "Product data"
+// @Success 201 {object} creatingProductsDtos.CreateProductResponseDto
 // @Router /api/v1/products [post]
 func (pc *ProductsController) createProduct() echo.HandlerFunc {
 
 	return func(ctx echo.Context) error {
-		request := &creating_products_dtos.CreateProductRequestDto{}
+		request := &creatingProductsDtos.CreateProductRequestDto{}
 		if err := ctx.Bind(request); err != nil {
 			return err
 		}
@@ -42,8 +42,8 @@ func (pc *ProductsController) createProduct() echo.HandlerFunc {
 			return err
 		}
 
-		command := creating_product.NewCreateProductCommand(request.Name, request.Description, request.Price)
-		result, err := mediatr.Send[*creating_products_dtos.CreateProductResponseDto](ctx.Request().Context(), command)
+		command := creatingProduct.NewCreateProductCommand(request.Name, request.Description, request.Price)
+		result, err := mediatr.Send[*creatingProductsDtos.CreateProductCommandResponse](ctx.Request().Context(), command)
 
 		if err != nil {
 			return err
@@ -60,23 +60,23 @@ func (pc *ProductsController) createProduct() echo.HandlerFunc {
 // @Accept json
 // @Produce json
 // @Param id path string true "Product ID"
-// @Success 200 {object} getting_product_by_id_dtos.GetProductByIdResponseDto
+// @Success 200 {object} gettingProductByIdDtos.GetProductByIdResponseDto
 // @Router /api/v1/products/{id} [get]
 func (pc *ProductsController) getProductByID() echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 
-		request := &getting_product_by_id_dtos.GetProductByIdRequestDto{}
+		request := &gettingProductByIdDtos.GetProductByIdRequestDto{}
 		if err := ctx.Bind(request); err != nil {
 			return err
 		}
 
-		query := getting_product_by_id.NewGetProductByIdQuery(request.ProductId)
+		query := gettingProductById.NewGetProductByIdQuery(request.ProductId)
 
 		if err := pc.validator.StructCtx(ctx.Request().Context(), query); err != nil {
 			return err
 		}
 
-		queryResult, err := mediatr.Send[*getting_product_by_id_dtos.GetProductByIdResponseDto](ctx.Request().Context(), query)
+		queryResult, err := mediatr.Send[*gettingProductByIdDtos.GetProductByIdQueryResponse](ctx.Request().Context(), query)
 
 		if err != nil {
 			return err

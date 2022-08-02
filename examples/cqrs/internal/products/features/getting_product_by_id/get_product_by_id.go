@@ -1,4 +1,4 @@
-package getting_product_by_id
+package gettingProductById
 
 import (
 	uuid "github.com/satori/go.uuid"

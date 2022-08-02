@@ -10,27 +10,27 @@ type RequestHandler[TRequest any, TResponse any] interface {
 	Handle(ctx context.Context, request TRequest) (TResponse, error)
 }
 
-var registrations = map[reflect.Type]interface{}{}
+var requestHandlersRegistrations = map[reflect.Type]interface{}{}
 
 type Unit struct{}
 
-// RegisterHandler register the handler to mediatr registry.
-func RegisterHandler[TRequest any, TResponse any](h RequestHandler[TRequest, TResponse]) error {
+// RegisterRequestHandler register the handler to mediatr registry.
+func RegisterRequestHandler[TRequest any, TResponse any](h RequestHandler[TRequest, TResponse]) error {
 	var request TRequest
 	requestType := reflect.TypeOf(request)
 
-	_, exist := registrations[requestType]
+	_, exist := requestHandlersRegistrations[requestType]
 	if exist {
 		return fmt.Errorf("registerd handler already registered for message %T", requestType)
 	}
 
-	registrations[requestType] = h
+	requestHandlersRegistrations[requestType] = h
 
 	return nil
 }
 
-// RegisterBehavior TODO
-func RegisterBehavior(b interface{}) error {
+// RegisterRequestBehavior TODO
+func RegisterRequestBehavior(b interface{}) error {
 	return nil
 }
 
@@ -39,7 +39,7 @@ func Send[TResponse any, TRequest any](ctx context.Context, request TRequest) (T
 
 	requestType := reflect.TypeOf(request)
 
-	handler, ok := registrations[requestType]
+	handler, ok := requestHandlersRegistrations[requestType]
 	if !ok {
 		return *new(TResponse), fmt.Errorf("no handlers for command %T", request)
 	}

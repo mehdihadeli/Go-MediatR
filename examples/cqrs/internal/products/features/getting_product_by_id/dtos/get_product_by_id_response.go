@@ -4,6 +4,6 @@ import (
 	"github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/dtos"
 )
 
-type GetProductByIdResponseDto struct {
+type GetProductByIdQueryResponse struct {
 	Product *dtos.ProductDto `json:"product"`
 }

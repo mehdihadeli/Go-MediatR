@@ -1,8 +1,8 @@
-package creating_product
+package creatingProduct
 
 import (
 	"context"
-	creating_product_dtos "github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/creating_product/dtos"
+	creatingProductDtos "github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/creating_product/dtos"
 	"github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/models"
 	"github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/repository"
 )
@@ -15,7 +15,7 @@ func NewCreateProductCommandHandler(productRepository *repository.InMemoryProduc
 	return &CreateProductCommandHandler{productRepository: productRepository}
 }
 
-func (c *CreateProductCommandHandler) Handle(ctx context.Context, command *CreateProductCommand) (*creating_product_dtos.CreateProductResponseDto, error) {
+func (c *CreateProductCommandHandler) Handle(ctx context.Context, command *CreateProductCommand) (*creatingProductDtos.CreateProductCommandResponse, error) {
 
 	product := &models.Product{
 		ProductID:   command.ProductID,
@@ -30,7 +30,7 @@ func (c *CreateProductCommandHandler) Handle(ctx context.Context, command *Creat
 		return nil, err
 	}
 
-	response := &creating_product_dtos.CreateProductResponseDto{ProductID: createdProduct.ProductID}
+	response := &creatingProductDtos.CreateProductCommandResponse{ProductID: createdProduct.ProductID}
 
 	return response, nil
 }
