@@ -21,7 +21,7 @@ go get github.com/mehdihadeli/mediatr
 Mediatr has two strategies for dispatching messages:
 
 1. `Request/Response` messages, dispatched to a `single handler`.
-2. `Notification` messages, dispatched to all (multiple) `handlers` and it doesn't have any response.
+2. `Notification` messages, dispatched to all (multiple) `handlers` and thet don't have any response.
 
 ## Request/Response Strategy
 The `request/response` message, has just `one handler`, and can handle both command and query scenarios in [CQRS Pattern](https://martinfowler.com/bliki/CQRS.html).
