@@ -21,7 +21,7 @@ go get github.com/mehdihadeli/mediatr
 Mediatr has two strategies for dispatching messages:
 
 1. `Request/Response` messages, dispatched to a `single handler`.
-2. `Notification` messages, dispatched to all (multiple) `handlers` and thet don't have any response.
+2. `Notification` messages, dispatched to all (multiple) `handlers` and they don't have any response.
 
 ## Request/Response Strategy
 The `request/response` message, has just `one handler`, and can handle both command and query scenarios in [CQRS Pattern](https://martinfowler.com/bliki/CQRS.html).
@@ -184,7 +184,7 @@ The `notification` message, can have `multiple handlers` and doesn't have any re
 
 For creating a notification (event), that has multiple `handlers` and doesn't have any response, we could create an event notification as a `notification` like this:
 
-```azure
+```go
 // Event (Notification)
 type ProductCreatedEvent struct {
     ProductID uuid.UUID   `json:"productId"`
