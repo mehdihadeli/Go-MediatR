@@ -16,22 +16,65 @@ For decoupling some objects in a system we could use `Mediator` object as an int
 go get github.com/mehdihadeli/mediatr
 ```
 
-## Registering Handlers 
+## Strategies
+Mediatr has two strategies for dispatching messages:
 
-``` go
+1. `Request/Response` messages, dispatched to a `single handler`.
+2. `Notification` messages, dispatched to all (multiple) `handlers` and it doesn't have any response.
 
-// Command
+## Request/Response Strategy
+The `request/response` message, has just `one handler`, and can handle both command and query scenarios in [CQRS Pattern](https://martinfowler.com/bliki/CQRS.html).
 
+### Creating a Request/Response Message
+
+For creating a request (command or query) that has just `one handler`, we could create a command message or query message as a `request` like this:
+
+```go
+// Command (Request)
 type CreateProductCommand struct {
-	ProductID   uuid.UUID `validate:"required"`
-	Name        string    `validate:"required,gte=0,lte=255"`
-	Description string    `validate:"required,gte=0,lte=5000"`
-	Price       float64   `validate:"required,gte=0"`
-	CreatedAt   time.Time `validate:"required"`
+    ProductID   uuid.UUID `validate:"required"`
+    Name        string    `validate:"required,gte=0,lte=255"`
+    Description string    `validate:"required,gte=0,lte=5000"`
+    Price       float64   `validate:"required,gte=0"`
+    CreatedAt   time.Time `validate:"required"`
 }
 
-// Command Handler
+// Query (Request)
+type GetProdctByIdQuery struct {
+    ProductID uuid.UUID `validate:"required"`
+}
+```
+And for response of these requests, we could create response messages as a `response` like this:
 
+```go
+// Command (Response)
+type CreateProductCommandResponse struct {
+    ProductID uuid.UUID `json:"productId"`
+}
+
+// Query (Response)
+type GetProdctByIdQueryResponse struct {
+    ProductID   uuid.UUID `json:"productId"`
+    Name        string    `json:"name"`
+    Description string    `json:"description"`
+    Price       float64   `json:"price"`
+    CreatedAt   time.Time `json:"createdAt"`
+}
+```
+
+### Creating Request Handler
+
+For handling our requests, we should create a `single request handler` for each request. Each handler should implement the `RequestHandler` interface. 
+```go
+type RequestHandler[TRequest any, TResponse any] interface {
+	Handle(ctx context.Context, request TRequest) (TResponse, error)
+}
+```
+
+Here we Create `request handler` (command handler and query handler) for our requests, that implements above interface:
+
+``` go
+// Command Handler
 type CreateProductCommandHandler struct {
 	productRepository *repository.InMemoryProductRepository
 }
@@ -40,7 +83,7 @@ func NewCreateProductCommandHandler(productRepository *repository.InMemoryProduc
 	return &CreateProductCommandHandler{productRepository: productRepository}
 }
 
-func (c *CreateProductCommandHandler) Handle(ctx context.Context, command *CreateProductCommand) (*creating_product_dtos.CreateProductResponseDto, error) {
+func (c *CreateProductCommandHandler) Handle(ctx context.Context, command *CreateProductCommand) (*creatingProductDtos.CreateProductCommandResponse, error) {
 
 	product := &models.Product{
 		ProductID:   command.ProductID,
@@ -55,25 +98,111 @@ func (c *CreateProductCommandHandler) Handle(ctx context.Context, command *Creat
 		return nil, err
 	}
 
-	response := &creating_product_dtos.CreateProductResponseDto{ProductID: createdProduct.ProductID}
+	response := &creatingProductDtos.CreateProductCommandResponse{ProductID: createdProduct.ProductID}
 
 	return response, nil
 }
-
-// Registering Command Handler to the mediatr
-
-mediatr.RegisterHandler[*creating_product.CreateProduct, *creating_products_dtos.CreateProductResponseDto](createProductCommandHandler)
-
 ```
 
-## Sending Request
+```go
+// Query Handler
+type GetProductByIdQueryHandler struct {
+    productRepository *repository.InMemoryProductRepository
+}
 
+func NewGetProductByIdQueryHandler(productRepository *repository.InMemoryProductRepository) *GetProductByIdQueryHandler {
+    return &GetProductByIdQueryHandler{productRepository: productRepository}
+}
+
+func (c *GetProductByIdQueryHandler) Handle(ctx context.Context, query *GetProductByIdQuery) (*gettingProductDtos.GetProdctByIdQueryResponse, error) {
+
+    product, err := c.productRepository.GetProductById(ctx, query.ProductID)
+    if err != nil {
+        return nil, err
+    }
+
+    response := &gettingProductDtos.GetProdctByIdQueryResponse{
+        ProductID:   product.ProductID,
+        Name:        product.Name,
+        Description: product.Description,
+        Price:       product.Price,
+        CreatedAt:   product.CreatedAt,
+    }
+
+    return response, nil
+}
+```
+
+> Note: In the cases we don't need a response from our request handler, we can use `Unit` type, that actually is an empty struct:.
+
+### Registering Request Handler to the MediatR
+Before `sending` or `dispatching` our requests, we should `register` our request handler to the MediatR.
+
+Here we register our request handlers (command handler and query handler) to the MediatR:
+```go
+// Registering `createProductCommandHandler` request handler for `CreateProductCommand` request to the MediatR
+mediatr.RegisterHandler[*creatingProduct.CreateProductCommand, *creatingProductsDtos.CreateProductCommandResponse](createProductCommandHandler)
+
+// Registering `getProductByIdQueryHandler` request handler for `GetProductByIdQuery` request to the MediatR
+mediatr.RegisterHandler[*gettingProduct.GetProductByIdQuery, *gettingProductDtos.GetProdctByIdQueryResponse](getProductByIdQueryHandler)
+```
+
+### Sending Request to the MediatR
+
+Finally, send a message through the mediator.
+
+Here we send our requests to the MediatR for dispacthing them to the request handlers (command handler and query handler):
 ``` go
-// Sending command to mediatr for routing to the corresponding command handler
+// Sending `CreateProductCommand` request to mediatr for dispatching to the `CreateProductCommandHandler` request handler
+command := &CreateProductCommand{
+    ProductID:   uuid.NewV4(),
+    Name:        request.name,
+    Description: request.description,
+    Price:       request.price,
+    CreatedAt:   time.Now(),
+}
 
-command := creating_product.NewCreateProductCommand(request.Name, request.Description, request.Price)
-mediatr.Send[*creating_products_dtos.CreateProductResponseDto](ctx.Request().Context(), command)
+mediatr.Send[*creatingProductsDtos.CreateProductCommandResponse](ctx, command)
 ```
+
+```go
+// Sending `GetProdctByIdQuery` request to mediatr for dispatching to the `GetProductByIdQueryHandler` request handler
+query := &GetProdctByIdQuery{
+    ProductID:   uuid.NewV4()
+}
+
+mediatr.Send[*gettingProductsDtos.GetProdctByIdQueryResponse](ctx, query)
+```
+
+
+## Notification Strategy
+
+The `notification` message, can have `multiple handlers` and doesn't have any response, and it can handle an [event notification](https://martinfowler.com/articles/201701-event-driven.html) or notification in event driven architecture.
+
+### Creating a Notification Message
+
+For creating a notification (event), that has multiple `handlers` and doesn't have any response, we could create an event notification as a `notification` like this:
+
+```azure
+// Event (Notification)
+type ProductCreatedEvent struct {
+    ProductID uuid.UUID   `json:"productId"`
+    Name        string    `json:"name"`
+    Description string    `json:"description"`
+    Price       float64   `json:"price"`
+    CreatedAt   time.Time `json:"createdAt"`
+}
+```
+This event doesn't have any response.
+
+### Creating Notification Handlers
+TODO
+
+### Registering Notification Handlers to the MediatR
+TODO
+
+### Publishing Notification to the MediatR
+TODO
 
 ## Using Pipeline Behaviors
 TODO
