@@ -3,12 +3,13 @@
 [![CI](https://github.com/mehdihadeli/Go-MediatR/actions/workflows/ci.yml/badge.svg?branch=main&style=flat-square)](https://github.com/mehdihadeli/Go-MediatR/actions/workflows/ci.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/mehdihadeli/Go-MediatR)](https://goreportcard.com/report/github.com/mehdihadeli/Go-MediatR)
 ![Go Version](https://img.shields.io/badge/go%20version-%3E=1.18-61CFDD.svg?style=flat-square)
-[![](https://godoc.org/github.com/mehdihadeli/Go-MediatR?status.svg)](https://pkg.go.dev/github.com/mehdihadeli/Go-MediatR)
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/mehdihadeli/Go-MediatR/blob/main/LICENCE)
 
-This package is a `Mediator Pattern` implementation in golang, and inspired by great [jbogard/mediatr](https://github.com/jbogard/mediatr) library in .Net.
+> This package is a `Mediator Pattern` implementation in golang, and inspired by great [jbogard/mediatr](https://github.com/jbogard/mediatr) library in .Net.
 
 For decoupling some objects in a system we could use `Mediator` object as an interface, for decrease coupling between the objects. Mostly I uses this pattern when I use CQRS in my system.
+
+There are some samples for using this package [here](./examples).
 
 ## Installation
 
