@@ -43,7 +43,7 @@ func (pc *ProductsController) createProduct() echo.HandlerFunc {
 		}
 
 		command := creatingProduct.NewCreateProductCommand(request.Name, request.Description, request.Price)
-		result, err := mediatr.Send[*creatingProductsDtos.CreateProductCommandResponse](ctx.Request().Context(), command)
+		result, err := mediatr.Send[*creatingProduct.CreateProductCommand, *creatingProductsDtos.CreateProductCommandResponse](ctx.Request().Context(), command)
 
 		if err != nil {
 			return err
@@ -76,7 +76,7 @@ func (pc *ProductsController) getProductByID() echo.HandlerFunc {
 			return err
 		}
 
-		queryResult, err := mediatr.Send[*gettingProductByIdDtos.GetProductByIdQueryResponse](ctx.Request().Context(), query)
+		queryResult, err := mediatr.Send[*gettingProductById.GetProductByIdQuery, *gettingProductByIdDtos.GetProductByIdQueryResponse](ctx.Request().Context(), query)
 
 		if err != nil {
 			return err

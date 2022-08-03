@@ -2,7 +2,7 @@ package mediatr
 
 import (
 	"context"
-	"fmt"
+	"github.com/pkg/errors"
 	"reflect"
 )
 
@@ -14,14 +14,15 @@ var requestHandlersRegistrations = map[reflect.Type]interface{}{}
 
 type Unit struct{}
 
-// RegisterRequestHandler register the handler to mediatr registry.
+// RegisterRequestHandler register the request handler to mediatr registry.
 func RegisterRequestHandler[TRequest any, TResponse any](h RequestHandler[TRequest, TResponse]) error {
 	var request TRequest
 	requestType := reflect.TypeOf(request)
 
 	_, exist := requestHandlersRegistrations[requestType]
 	if exist {
-		return fmt.Errorf("registerd handler already registered for message %T", requestType)
+		// each request in request/response strategy should have just one handler
+		return errors.Errorf("registered handler already exists in the registry for message %s", requestType.String())
 	}
 
 	requestHandlersRegistrations[requestType] = h
@@ -35,23 +36,23 @@ func RegisterRequestBehavior(b interface{}) error {
 }
 
 // Send the request to its corresponding handler.
-func Send[TResponse any, TRequest any](ctx context.Context, request TRequest) (TResponse, error) {
+func Send[TRequest any, TResponse any](ctx context.Context, request TRequest) (TResponse, error) {
 
 	requestType := reflect.TypeOf(request)
 
 	handler, ok := requestHandlersRegistrations[requestType]
 	if !ok {
-		return *new(TResponse), fmt.Errorf("no handlers for command %T", request)
+		return *new(TResponse), errors.Errorf("no handlers for command %T", request)
 	}
 
 	handlerValue, ok := handler.(RequestHandler[TRequest, TResponse])
 	if !ok {
-		return *new(TResponse), fmt.Errorf("handler for command %T is not a Handler", request)
+		return *new(TResponse), errors.Errorf("handler for command %T is not a Handler", request)
 	}
 
 	response, err := handlerValue.Handle(ctx, request)
 	if err != nil {
-		return *new(TResponse), err
+		return *new(TResponse), errors.Wrap(err, "error handling request")
 	}
 
 	return response, nil

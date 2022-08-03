@@ -163,7 +163,7 @@ command := &CreateProductCommand{
     CreatedAt:   time.Now(),
 }
 
-mediatr.Send[*creatingProductsDtos.CreateProductCommandResponse](ctx, command)
+mediatr.Send[*CreateProductCommand, *creatingProductsDtos.CreateProductCommandResponse](ctx, command)
 ```
 
 ```go
@@ -172,7 +172,7 @@ query := &GetProdctByIdQuery{
     ProductID:   uuid.NewV4()
 }
 
-mediatr.Send[*gettingProductsDtos.GetProdctByIdQueryResponse](ctx, query)
+mediatr.Send[*GetProdctByIdQuery, *gettingProductsDtos.GetProdctByIdQueryResponse](ctx, query)
 ```
 
 
