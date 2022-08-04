@@ -137,7 +137,7 @@ func (c *GetProductByIdQueryHandler) Handle(ctx context.Context, query *GetProdu
 > Note: In the cases we don't need a response from our request handler, we can use `Unit` type, that actually is an empty struct:.
 
 ### Registering Request Handler to the MediatR
-Before `sending` or `dispatching` our requests, we should `register` our request handler to the MediatR.
+Before `sending` or `dispatching` our requests, we should `register` our request handlers to the MediatR.
 
 Here we register our request handlers (command handler and query handler) to the MediatR:
 ```go
@@ -152,7 +152,7 @@ mediatr.RegisterHandler[*gettingProduct.GetProductByIdQuery, *gettingProductDtos
 
 Finally, send a message through the mediator.
 
-Here we send our requests to the MediatR for dispacthing them to the request handlers (command handler and query handler):
+Here we send our requests to the MediatR for dispatching them to the request handlers (command handler and query handler):
 ``` go
 // Sending `CreateProductCommand` request to mediatr for dispatching to the `CreateProductCommandHandler` request handler
 command := &CreateProductCommand{
@@ -167,14 +167,13 @@ mediatr.Send[*CreateProductCommand, *creatingProductsDtos.CreateProductCommandRe
 ```
 
 ```go
-// Sending `GetProdctByIdQuery` request to mediatr for dispatching to the `GetProductByIdQueryHandler` request handler
+// Sending `GetProductByIdQuery` request to mediatr for dispatching to the `GetProductByIdQueryHandler` request handler
 query := &GetProdctByIdQuery{
     ProductID:   uuid.NewV4()
 }
 
-mediatr.Send[*GetProdctByIdQuery, *gettingProductsDtos.GetProdctByIdQueryResponse](ctx, query)
+mediatr.Send[*GetProductByIdQuery, *gettingProductsDtos.GetProductByIdQueryResponse](ctx, query)
 ```
-
 
 ## Notification Strategy
 
@@ -197,13 +196,66 @@ type ProductCreatedEvent struct {
 This event doesn't have any response.
 
 ### Creating Notification Handlers
-TODO
+
+For handling our notification, we can create `multiple notification handlers` for each notification event. Each handler should implement the `NotificationHandler` interface.
+```go
+type NotificationHandler[TNotification any] interface {
+    Handle(ctx context.Context, notification TNotification) error
+}
+```
+
+Here we Create multiple `notification event handler` for our notification, that implements above interface:
+
+```go
+// Notification Event Handler1
+type ProductCreatedEventHandler1 struct {
+}
+
+func (c *ProductCreatedEventHandler1) Handle(ctx context.Context, event *ProductCreatedEvent) error {
+//Do something with the event here !
+    return nil
+}
+```
+
+```go
+// Notification Event Handler2
+type ProductCreatedEventHandler2 struct {
+}
+
+func (c *ProductCreatedEventHandler2) Handle(ctx context.Context, event *ProductCreatedEvent) error {
+//Do something with the event here !
+    return nil
+}
+```
 
 ### Registering Notification Handlers to the MediatR
-TODO
+Before `publishing` our notifications, we should `register` our notification handlers to the MediatR.
+
+Here we register our notification handlers to the MediatR:
+```go
+// Registering `notificationHandler1`, `notificationHandler2` notification handler for `ProductCreatedEvent` notification event to the MediatR
+notificationHandler1 := &ProductCreatedEventHandler1{}
+notificationHandler2 := &ProductCreatedEventHandler2{}
+
+mediatr.RegisterNotificationHandlers[*events.ProductCreatedEvent](notificationHandler1, notificationHandler2)
+```
 
 ### Publishing Notification to the MediatR
-TODO
+Finally, publish a notification event through the mediator.
+
+Here we publish our notification to the MediatR for dispatching them to the notification handlers:
+``` go
+// Publishing `ProductCreatedEvent` notification to mediatr for dispatching to the `ProductCreatedEventHandler1`, `ProductCreatedEventHandler2` notification handlers
+productCreatedEvent := 	&ProductCreatedEvent {
+    ProductID:   createdProduct.ProductID,
+    Name:        createdProduct.Name,
+    Price:       createdProduct.Price,
+    CreatedAt:   createdProduct.CreatedAt,
+    Description: createdProduct.Description,
+}
+	
+mediatr.Publish[*events.ProductCreatedEvent](ctx, productCreatedEvent)
+```
 
 ## Using Pipeline Behaviors
 TODO
