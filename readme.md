@@ -1,9 +1,6 @@
-# 🚃 Golang MediatR
-
 <p align="center">
   <img src="assets/Go-MediatR.png" >
   <h1 align="center">
-   Go-MediatR
     <br>
     <a href="https://github.com/mehdihadeli/Go-MediatR/actions/workflows/ci.yml"><img alt="build-status" src="https://github.com/mehdihadeli/Go-MediatR/actions/workflows/ci.yml/badge.svg?branch=main&style=flat-square"/></a>
     <a href="https://goreportcard.com/report/github.com/mehdihadeli/Go-MediatR" ><img alt="go report" src="https://goreportcard.com/badge/github.com/mehdihadeli/Go-MediatR"/></a>
