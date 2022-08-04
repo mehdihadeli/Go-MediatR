@@ -1,4 +1,4 @@
-package gettingProductById
+package queries
 
 import (
 	"context"

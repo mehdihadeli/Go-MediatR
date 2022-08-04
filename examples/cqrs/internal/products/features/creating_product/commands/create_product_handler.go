@@ -1,8 +1,10 @@
-package creatingProduct
+package commands
 
 import (
 	"context"
+	"github.com/mehdihadeli/mediatr"
 	creatingProductDtos "github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/creating_product/dtos"
+	"github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/creating_product/events"
 	"github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/models"
 	"github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/repository"
 )
@@ -31,6 +33,14 @@ func (c *CreateProductCommandHandler) Handle(ctx context.Context, command *Creat
 	}
 
 	response := &creatingProductDtos.CreateProductCommandResponse{ProductID: createdProduct.ProductID}
+
+	// Publish notification event to the mediatr for dispatching to the notification handlers
+
+	productCreatedEvent := events.NewProductCreatedEvent(createdProduct.ProductID, createdProduct.Name, createdProduct.Description, createdProduct.Price, createdProduct.CreatedAt)
+	err = mediatr.Publish[*events.ProductCreatedEvent](ctx, productCreatedEvent)
+	if err != nil {
+		return nil, err
+	}
 
 	return response, nil
 }

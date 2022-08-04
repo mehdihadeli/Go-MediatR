@@ -2,10 +2,10 @@ package api
 
 import (
 	"github.com/mehdihadeli/mediatr"
-	"github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/creating_product"
+	"github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/creating_product/commands"
 	creatingProductsDtos "github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/creating_product/dtos"
-	"github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/getting_product_by_id"
 	gettingProductByIdDtos "github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/getting_product_by_id/dtos"
+	"github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/getting_product_by_id/queries"
 	"net/http"
 
 	"github.com/go-playground/validator"
@@ -42,8 +42,8 @@ func (pc *ProductsController) createProduct() echo.HandlerFunc {
 			return err
 		}
 
-		command := creatingProduct.NewCreateProductCommand(request.Name, request.Description, request.Price)
-		result, err := mediatr.Send[*creatingProduct.CreateProductCommand, *creatingProductsDtos.CreateProductCommandResponse](ctx.Request().Context(), command)
+		command := commands.NewCreateProductCommand(request.Name, request.Description, request.Price)
+		result, err := mediatr.Send[*commands.CreateProductCommand, *creatingProductsDtos.CreateProductCommandResponse](ctx.Request().Context(), command)
 
 		if err != nil {
 			return err
@@ -70,13 +70,13 @@ func (pc *ProductsController) getProductByID() echo.HandlerFunc {
 			return err
 		}
 
-		query := gettingProductById.NewGetProductByIdQuery(request.ProductId)
+		query := queries.NewGetProductByIdQuery(request.ProductId)
 
 		if err := pc.validator.StructCtx(ctx.Request().Context(), query); err != nil {
 			return err
 		}
 
-		queryResult, err := mediatr.Send[*gettingProductById.GetProductByIdQuery, *gettingProductByIdDtos.GetProductByIdQueryResponse](ctx.Request().Context(), query)
+		queryResult, err := mediatr.Send[*queries.GetProductByIdQuery, *gettingProductByIdDtos.GetProductByIdQueryResponse](ctx.Request().Context(), query)
 
 		if err != nil {
 			return err

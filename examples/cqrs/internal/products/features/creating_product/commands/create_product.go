@@ -1,4 +1,4 @@
-package creatingProduct
+package commands
 
 import (
 	"time"

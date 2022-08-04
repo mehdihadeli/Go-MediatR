@@ -5,10 +5,11 @@ import (
 	"github.com/mehdihadeli/mediatr"
 	"github.com/mehdihadeli/mediatr/examples/cqrs/docs"
 	productApi "github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/api"
-	"github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/creating_product"
+	"github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/creating_product/commands"
 	creatingProductsDtos "github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/creating_product/dtos"
-	"github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/getting_product_by_id"
+	"github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/creating_product/events"
 	gettingProductByIdDtos "github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/getting_product_by_id/dtos"
+	"github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/getting_product_by_id/queries"
 	"github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/repository"
 	"log"
 	"os"
@@ -28,20 +29,32 @@ func main() {
 	echo := echo.New()
 	productRepository := repository.NewInMemoryProductRepository()
 
-	createProductCommandHandler := creatingProduct.NewCreateProductCommandHandler(productRepository)
-	getByIdQueryHandler := gettingProductById.NewGetProductByIdHandler(productRepository)
+	//////////////////////////////////////////////////////////////////////////////////////////////
+	// Register request handlers to the mediatr
 
-	// Register handlers to the mediatr
-	err := mediatr.RegisterRequestHandler[*creatingProduct.CreateProductCommand, *creatingProductsDtos.CreateProductCommandResponse](createProductCommandHandler)
+	createProductCommandHandler := commands.NewCreateProductCommandHandler(productRepository)
+	getByIdQueryHandler := queries.NewGetProductByIdHandler(productRepository)
+
+	err := mediatr.RegisterRequestHandler[*commands.CreateProductCommand, *creatingProductsDtos.CreateProductCommandResponse](createProductCommandHandler)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = mediatr.RegisterRequestHandler[*gettingProductById.GetProductByIdQuery, *gettingProductByIdDtos.GetProductByIdQueryResponse](getByIdQueryHandler)
+	err = mediatr.RegisterRequestHandler[*queries.GetProductByIdQuery, *gettingProductByIdDtos.GetProductByIdQueryResponse](getByIdQueryHandler)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////////////////
+	// Register notification handlers to the mediatr
+	notificationHandler := events.NewProductCreatedEventHandler()
+	err = mediatr.RegisterNotificationHandler[*events.ProductCreatedEvent](notificationHandler)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////////////
+	// Controllers setup
 	controller := productApi.NewProductsController(echo)
 
 	productApi.MapProductsRoutes(echo, controller)
