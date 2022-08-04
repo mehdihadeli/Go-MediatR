@@ -1,12 +1,11 @@
 <p align="center">
   <img src="assets/Go-MediatR.png" >
-  <h1 align="center">
-    <br>
+  <div align="center">
     <a href="https://github.com/mehdihadeli/Go-MediatR/actions/workflows/ci.yml"><img alt="build-status" src="https://github.com/mehdihadeli/Go-MediatR/actions/workflows/ci.yml/badge.svg?branch=main&style=flat-square"/></a>
     <a href="https://goreportcard.com/report/github.com/mehdihadeli/Go-MediatR" ><img alt="go report" src="https://goreportcard.com/badge/github.com/mehdihadeli/Go-MediatR"/></a>
     <a><img alt="license" src="https://img.shields.io/badge/go%20version-%3E=1.18-61CFDD.svg?style=flat-square"/></a>
     <a href="https://github.com/mehdihadeli/Go-MediatR/blob/main/LICENCE"><img alt="build-status" src="https://img.shields.io/github/license/mashape/apistatus.svg"/></a>
-  </h1>
+  </div>
 </p>
 
 > This package is a `Mediator Pattern` implementation in golang, and inspired by great [jbogard/mediatr](https://github.com/jbogard/mediatr) library in .Net.
