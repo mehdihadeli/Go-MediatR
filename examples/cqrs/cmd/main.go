@@ -11,6 +11,7 @@ import (
 	gettingProductByIdDtos "github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/getting_product_by_id/dtos"
 	"github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/getting_product_by_id/queries"
 	"github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/repository"
+	"github.com/mehdihadeli/mediatr/examples/cqrs/internal/shared/behaviours"
 	"log"
 	"os"
 	"os/signal"
@@ -49,6 +50,14 @@ func main() {
 	// Register notification handlers to the mediatr
 	notificationHandler := events.NewProductCreatedEventHandler()
 	err = mediatr.RegisterNotificationHandler[*events.ProductCreatedEvent](notificationHandler)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////////////
+	// Register request handlers pipeline to the mediatr
+	loggerPipeline := &behaviours.RequestLoggerBehaviour{}
+	err = mediatr.RegisterRequestPipelineBehaviors(loggerPipeline)
 	if err != nil {
 		log.Fatal(err)
 	}

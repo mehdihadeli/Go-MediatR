@@ -1,12 +1,12 @@
-<p align="center">
-  <img src="assets/Go-MediatR.png" >
+<div align="center">
+  <img src="assets/Go-MediatR.png" alt="go-mediatr" />
   <div align="center">
     <a href="https://github.com/mehdihadeli/Go-MediatR/actions/workflows/ci.yml"><img alt="build-status" src="https://github.com/mehdihadeli/Go-MediatR/actions/workflows/ci.yml/badge.svg?branch=main&style=flat-square"/></a>
     <a href="https://goreportcard.com/report/github.com/mehdihadeli/Go-MediatR" ><img alt="go report" src="https://goreportcard.com/badge/github.com/mehdihadeli/Go-MediatR"/></a>
     <a><img alt="license" src="https://img.shields.io/badge/go%20version-%3E=1.18-61CFDD.svg?style=flat-square"/></a>
     <a href="https://github.com/mehdihadeli/Go-MediatR/blob/main/LICENCE"><img alt="build-status" src="https://img.shields.io/github/license/mashape/apistatus.svg"/></a>
   </div>
-</p>
+</div>
 
 > This package is a `Mediator Pattern` implementation in golang, and inspired by great [jbogard/mediatr](https://github.com/jbogard/mediatr) library in .Net.
 
@@ -261,4 +261,48 @@ mediatr.Publish[*events.ProductCreatedEvent](ctx, productCreatedEvent)
 ```
 
 ## Using Pipeline Behaviors
-TODO
+Sometimes we need to add some cross-cutting concerns before after running our request handlers like logging, metrics, circuit breaker, retry, etc. In this case we can use `PipelineBehavior`. It is actually is like a middleware or [decorator pattern](https://refactoring.guru/design-patterns/decorator).
+
+These behaviors will execute before or after running our request handlers with calling `Send` method for a request on the mediatr.
+
+### Creating Pipeline Behavior
+For creating a pipeline behaviour we should implement the `PipelineBehavior` interface:
+
+``` go
+type PipelineBehavior interface {
+	Handle(ctx context.Context, request interface{}, next RequestHandlerFunc) (interface{}, error)
+}
+```
+The `request` parameter is the request object passed in through `Send` method of mediatr, while the `next` parameter is a continuation for the next action in the behavior chain and its type is `RequestHandlerFunc`. 
+
+Here is an example of a pipeline behavior:
+
+```go
+type RequestLoggerBehaviour struct {
+}
+
+func (r *RequestLoggerBehaviour) Handle(ctx context.Context, request interface{}, next mediatr.RequestHandlerFunc) (interface{}, error) {
+	log.Printf("logging some stuff before handling the request")
+
+	response, err := next()
+	if err != nil {
+		return nil, err
+	}
+
+	log.Println("logging some stuff after handling the request")
+
+	return response, nil
+}
+```
+In our defined behavior, we need to call `next` parameter that call next action in the behavior chain, if there aren't any other behaviours `next` will call our `actual request handler` and return the response. We can do something before of after of calling next action in the behavior chain.
+
+### Registering Pipeline Behavior to the MediatR
+
+For registering our pipeline behavior to the MediatR, we should use `RegisterPipelineBehaviors` method:
+
+```go
+loggerPipeline := &behaviours.RequestLoggerBehaviour{}
+err = mediatr.RegisterRequestPipelineBehaviors(loggerPipeline)
+```
+
+

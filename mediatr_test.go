@@ -3,10 +3,13 @@ package mediatr
 import (
 	"context"
 	"fmt"
+	"github.com/goccy/go-reflect"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
+
+var testData []string
 
 func Test_RegisterRequestHandler_Should_Return_Error_If_Handler_Already_Registered(t *testing.T) {
 	expectedErr := fmt.Sprintf("registered handler already exists in the registry for message %s", "*mediatr.RequestTest")
@@ -17,6 +20,9 @@ func Test_RegisterRequestHandler_Should_Return_Error_If_Handler_Already_Register
 
 	assert.Nil(t, err1)
 	assert.Containsf(t, err2.Error(), expectedErr, "expected error containing %q, got %s", expectedErr, err2)
+
+	count := len(requestHandlersRegistrations)
+	assert.Equal(t, 1, count)
 }
 
 func Test_RegisterRequestHandler_Should_Register_All_Handlers(t *testing.T) {
@@ -25,8 +31,17 @@ func Test_RegisterRequestHandler_Should_Register_All_Handlers(t *testing.T) {
 	err1 := RegisterRequestHandler[*RequestTest, *ResponseTest](handler1)
 	err2 := RegisterRequestHandler[*RequestTest2, *ResponseTest2](handler2)
 
-	assert.Nil(t, err1)
-	assert.Nil(t, err2)
+	if err1 != nil {
+		t.Errorf("error registering request handler: %s", err1)
+	}
+
+	if err2 != nil {
+		t.Errorf("error registering request handler: %s", err2)
+	}
+
+	count := len(requestHandlersRegistrations)
+	assert.Equal(t, 2, count)
+
 }
 
 func Test_Send_Should_Throw_Error_If_No_Handler_Registered(t *testing.T) {
@@ -46,16 +61,39 @@ func Test_Send_Should_Return_Error_If_Handler_Returns_Error(t *testing.T) {
 	assert.Containsf(t, err.Error(), expectedErr, "expected error containing %q, got %s", expectedErr, err)
 }
 
-func Test_Send_Should_Dispatch_Request_To_Handler_And_Get_Response(t *testing.T) {
+func Test_Send_Should_Dispatch_Request_To_Handler_And_Get_Response_Without_Pipeline(t *testing.T) {
 	handler := &RequestTestHandler{}
 	errRegister := RegisterRequestHandler[*RequestTest, *ResponseTest](handler)
 	if errRegister != nil {
 		t.Error(errRegister)
 	}
+
 	response, err := Send[*RequestTest, *ResponseTest](context.Background(), &RequestTest{Data: "test"})
 	assert.Nil(t, err)
 	assert.IsType(t, &ResponseTest{}, response)
 	assert.Equal(t, "test", response.Data)
+}
+
+func Test_Send_Should_Dispatch_Request_To_Handler_And_Get_Response_With_Pipeline(t *testing.T) {
+	pip1 := &PipelineBehaviourTest{}
+	pip2 := &PipelineBehaviourTest2{}
+	err := RegisterRequestPipelineBehaviors(pip1, pip2)
+	if err != nil {
+		t.Errorf("error registering request pipeline behaviors: %s", err)
+	}
+
+	handler := &RequestTestHandler{}
+	errRegister := RegisterRequestHandler[*RequestTest, *ResponseTest](handler)
+	if errRegister != nil {
+		t.Error(errRegister)
+	}
+
+	response, err := Send[*RequestTest, *ResponseTest](context.Background(), &RequestTest{Data: "test"})
+	assert.Nil(t, err)
+	assert.IsType(t, &ResponseTest{}, response)
+	assert.Equal(t, "test", response.Data)
+	assert.Contains(t, testData, "PipelineBehaviourTest")
+	assert.Contains(t, testData, "PipelineBehaviourTest2")
 }
 
 func Test_RegisterNotificationHandler_Should_Register_Multiple_Handler_For_Notification(t *testing.T) {
@@ -64,8 +102,15 @@ func Test_RegisterNotificationHandler_Should_Register_Multiple_Handler_For_Notif
 	err1 := RegisterNotificationHandler[*NotificationTest](handler1)
 	err2 := RegisterNotificationHandler[*NotificationTest](handler2)
 
-	assert.Nil(t, err1)
-	assert.Nil(t, err2)
+	if err1 != nil {
+		t.Errorf("error registering notification handler: %s", err1)
+	}
+	if err2 != nil {
+		t.Errorf("error registering notification handler: %s", err2)
+	}
+
+	count := len(notificationHandlersRegistrations[reflect.TypeOf(&NotificationTest{})])
+	assert.Equal(t, 2, count)
 }
 
 func Test_RegisterNotificationHandlers_Should_Register_Multiple_Handler_For_Notification(t *testing.T) {
@@ -74,7 +119,12 @@ func Test_RegisterNotificationHandlers_Should_Register_Multiple_Handler_For_Noti
 	handler3 := &NotificationTestHandler4{}
 	err := RegisterNotificationHandlers[*NotificationTest](handler1, handler2, handler3)
 
-	assert.Nil(t, err)
+	if err != nil {
+		t.Errorf("error registering notification handlers: %s", err)
+	}
+
+	count := len(notificationHandlersRegistrations[reflect.TypeOf(&NotificationTest{})])
+	assert.Equal(t, 3, count)
 }
 
 func Test_Publish_Should_Throw_Error_If_No_Handler_Registered(t *testing.T) {
@@ -104,8 +154,35 @@ func Test_Publish_Should_Dispatch_Notification_To_All_Handlers_Without_Any_Respo
 	if errRegister != nil {
 		t.Error(errRegister)
 	}
-	err := Publish[*NotificationTest](context.Background(), &NotificationTest{})
+
+	notification := &NotificationTest{}
+	err := Publish[*NotificationTest](context.Background(), notification)
 	assert.Nil(t, err)
+	assert.True(t, notification.Processed)
+}
+
+func Test_Register_Behaviours_Should_Register_Behaviours_In_The_Registry_Correctly(t *testing.T) {
+	pip1 := &PipelineBehaviourTest{}
+	pip2 := &PipelineBehaviourTest2{}
+
+	err := RegisterRequestPipelineBehaviors(pip1, pip2)
+	if err != nil {
+		t.Errorf("error registering behaviours: %s", err)
+	}
+
+	count := len(pipelineBehaviours)
+	assert.Equal(t, 2, count)
+}
+
+func Test_Register_Duplicate_Behaviours_Should_Throw_Error(t *testing.T) {
+	pip1 := &PipelineBehaviourTest{}
+	pip2 := &PipelineBehaviourTest{}
+	err := RegisterRequestPipelineBehaviors(pip1, pip2)
+	if err == nil {
+		t.Errorf("expected error, got nil")
+	}
+
+	assert.Contains(t, err.Error(), "registered behavior already exists in the registry")
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -121,6 +198,9 @@ type RequestTestHandler struct {
 }
 
 func (c *RequestTestHandler) Handle(ctx context.Context, request *RequestTest) (*ResponseTest, error) {
+	fmt.Println("RequestTestHandler.Handled")
+	testData = append(testData, "RequestTestHandler")
+
 	return &ResponseTest{Data: request.Data}, nil
 }
 
@@ -137,6 +217,9 @@ type RequestTestHandler2 struct {
 }
 
 func (c *RequestTestHandler2) Handle(ctx context.Context, request *RequestTest2) (*ResponseTest2, error) {
+	fmt.Println("RequestTestHandler2.Handled")
+	testData = append(testData, "RequestTestHandler2")
+
 	return &ResponseTest2{Data: request.Data}, nil
 }
 
@@ -150,25 +233,35 @@ func (c *RequestTestHandler3) Handle(ctx context.Context, request *RequestTest2)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 type NotificationTest struct {
-	Data string
+	Data      string
+	Processed bool
 }
 
 type NotificationTestHandler struct {
 }
 
 func (c *NotificationTestHandler) Handle(ctx context.Context, notification *NotificationTest) error {
+	notification.Processed = true
+	fmt.Println("NotificationTestHandler.Handled")
+	testData = append(testData, "NotificationTestHandler")
+
 	return nil
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 type NotificationTest2 struct {
-	Data string
+	Data      string
+	Processed bool
 }
 
 type NotificationTestHandler2 struct {
 }
 
 func (c *NotificationTestHandler2) Handle(ctx context.Context, notification *NotificationTest2) error {
+	notification.Processed = true
+	fmt.Println("NotificationTestHandler2.Handled")
+	testData = append(testData, "NotificationTestHandler2")
+
 	return nil
 }
 
@@ -186,5 +279,41 @@ type NotificationTestHandler4 struct {
 }
 
 func (c *NotificationTestHandler4) Handle(ctx context.Context, notification *NotificationTest) error {
+	notification.Processed = true
+	fmt.Println("NotificationTestHandler4.Handled")
+	testData = append(testData, "NotificationTestHandler4")
+
 	return nil
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+type PipelineBehaviourTest struct {
+}
+
+func (c *PipelineBehaviourTest) Handle(ctx context.Context, request interface{}, next RequestHandlerFunc) (interface{}, error) {
+	fmt.Println("PipelineBehaviourTest.Handled")
+	testData = append(testData, "PipelineBehaviourTest")
+
+	res, err := next()
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+type PipelineBehaviourTest2 struct {
+}
+
+func (c *PipelineBehaviourTest2) Handle(ctx context.Context, request interface{}, next RequestHandlerFunc) (interface{}, error) {
+	fmt.Println("PipelineBehaviourTest2.Handled")
+	testData = append(testData, "PipelineBehaviourTest2")
+
+	res, err := next()
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
