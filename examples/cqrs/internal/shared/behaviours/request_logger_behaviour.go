@@ -2,7 +2,7 @@ package behaviours
 
 import (
 	"context"
-	"github.com/mehdihadeli/mediatr"
+	"github.com/mehdihadeli/go-mediatr"
 	"log"
 )
 

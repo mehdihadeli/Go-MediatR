@@ -45,7 +45,7 @@ func Test_RegisterRequestHandler_Should_Register_All_Handlers(t *testing.T) {
 }
 
 func Test_Send_Should_Throw_Error_If_No_Handler_Registered(t *testing.T) {
-	expectedErr := fmt.Sprintf("no handlers for command %T", &RequestTest{})
+	expectedErr := fmt.Sprintf("no handlers for request %T", &RequestTest{})
 	_, err := Send[*RequestTest, *ResponseTest](context.Background(), &RequestTest{Data: "test"})
 	assert.Containsf(t, err.Error(), expectedErr, "expected error containing %q, got %s", expectedErr, err)
 }

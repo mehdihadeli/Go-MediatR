@@ -1,4 +1,4 @@
-module github.com/mehdihadeli/mediatr
+module github.com/mehdihadeli/go-mediatr
 
 go 1.18
 

@@ -2,11 +2,11 @@ package commands
 
 import (
 	"context"
-	"github.com/mehdihadeli/mediatr"
-	creatingProductDtos "github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/creating_product/dtos"
-	"github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/features/creating_product/events"
-	"github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/models"
-	"github.com/mehdihadeli/mediatr/examples/cqrs/internal/products/repository"
+	"github.com/mehdihadeli/go-mediatr"
+	creatingProductDtos "github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/features/creating_product/dtos"
+	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/features/creating_product/events"
+	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/models"
+	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/repository"
 )
 
 type CreateProductCommandHandler struct {

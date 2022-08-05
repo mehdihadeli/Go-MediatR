@@ -5,7 +5,7 @@
     <a href="https://goreportcard.com/report/github.com/mehdihadeli/Go-MediatR" ><img alt="go report" src="https://goreportcard.com/badge/github.com/mehdihadeli/Go-MediatR"/></a>
     <a><img alt="license" src="https://img.shields.io/badge/go%20version-%3E=1.18-61CFDD.svg?style=flat-square"/></a>
     <a href="https://github.com/mehdihadeli/Go-MediatR/blob/main/LICENCE"><img alt="build-status" src="https://img.shields.io/github/license/mashape/apistatus.svg"/></a>
-    <a href="https://pkg.go.dev/github.com/mehdihadeli/mediatr"><img alt="build-status" src="https://pkg.go.dev/badge/github.com/mehdihadeli/mediatr"/></a>
+    <a href="https://pkg.go.dev/github.com/mehdihadeli/go-mediatr"><img alt="build-status" src="https://pkg.go.dev/badge/github.com/mehdihadeli/go-mediatr"/></a>
   </div>
 </div>
 
@@ -18,7 +18,7 @@ There are some samples for using this package [here](./examples).
 ## Installation
 
 ```bash
-go get github.com/mehdihadeli/mediatr
+go get github.com/mehdihadeli/go-mediatr
 ```
 
 ## Strategies
