@@ -112,9 +112,9 @@ func Send[TRequest any, TResponse any](ctx context.Context, request TRequest) (T
 			return handlerValue.Handle(ctx, request)
 		}
 
-		aggregateResult := linq.From(reversPipes).AggregateWithSeed(lastHandler, func(next interface{}, pipe interface{}) interface{} {
-			pipeValue := pipe.(PipelineBehavior)
-			nexValue := next.(RequestHandlerFunc)
+		aggregateResult := linq.From(reversPipes).AggregateWithSeedT(lastHandler, func(next RequestHandlerFunc, pipe PipelineBehavior) RequestHandlerFunc {
+			pipeValue := pipe
+			nexValue := next
 
 			var handlerFunc RequestHandlerFunc = func() (interface{}, error) {
 				return pipeValue.Handle(ctx, request, nexValue)
