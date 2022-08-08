@@ -21,6 +21,13 @@ There are some samples for using this package [here](./examples).
 go get github.com/mehdihadeli/go-mediatr
 ```
 
+## Features
+✅ Handling `Request/Response` message for delivering message to only one handler (Commands, Queries)
+
+✅ Handling `Notification` message for delivering message to multiple handlers (Events)
+
+✅ `Pipelenes Behaviours` for handling some cross cutting concerns before or after executing handlers 
+
 ## Strategies
 Mediatr has two strategies for dispatching messages:
 
