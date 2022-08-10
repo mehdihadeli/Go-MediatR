@@ -2,6 +2,11 @@ package main
 
 import (
 	"context"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/mehdihadeli/go-mediatr"
 	"github.com/mehdihadeli/go-mediatr/examples/cqrs/docs"
 	productApi "github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/api"
@@ -12,10 +17,6 @@ import (
 	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/features/getting_product_by_id/queries"
 	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/repository"
 	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/shared/behaviours"
-	"log"
-	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/labstack/echo/v4"
 	echoSwagger "github.com/swaggo/echo-swagger"
@@ -83,6 +84,6 @@ func main() {
 	<-ctx.Done()
 
 	if err := echo.Shutdown(ctx); err != nil {
-		log.Fatal("(Shutdown) err: {%v}", err)
+		log.Fatal("(Shutdown) err", err)
 	}
 }
