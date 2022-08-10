@@ -15,29 +15,29 @@ For decoupling some objects in a system we could use `Mediator` object as an int
 
 There are some samples for using this package [here](./examples).
 
-## Installation
+## 🧰 Installation
 
 ```bash
 go get github.com/mehdihadeli/go-mediatr
 ```
 
-## Features
+## 🔥 Features
 ✅ Handling `Request/Response` message for delivering message to only one handler (Commands, Queries)
 
 ✅ Handling `Notification` message for delivering message to multiple handlers (Events)
 
 ✅ `Pipelenes Behaviours` for handling some cross cutting concerns before or after executing handlers 
 
-## Strategies
+## 🛡️ Strategies
 Mediatr has two strategies for dispatching messages:
 
 1. `Request/Response` messages, dispatched to a `single handler`.
 2. `Notification` messages, dispatched to all (multiple) `handlers` and they don't have any response.
 
-## Request/Response Strategy
+### Request/Response Strategy
 The `request/response` message, has just `one handler`, and can handle both command and query scenarios in [CQRS Pattern](https://martinfowler.com/bliki/CQRS.html).
 
-### Creating a Request/Response Message
+#### Creating a Request/Response Message
 
 For creating a request (command or query) that has just `one handler`, we could create a command message or query message as a `request` like this:
 
@@ -74,7 +74,7 @@ type GetProdctByIdQueryResponse struct {
 }
 ```
 
-### Creating Request Handler
+#### Creating Request Handler
 
 For handling our requests, we should create a `single request handler` for each request. Each handler should implement the `RequestHandler` interface. 
 ```go
@@ -147,7 +147,7 @@ func (c *GetProductByIdQueryHandler) Handle(ctx context.Context, query *GetProdu
 
 > Note: In the cases we don't need a response from our request handler, we can use `Unit` type, that actually is an empty struct:.
 
-### Registering Request Handler to the MediatR
+#### Registering Request Handler to the MediatR
 Before `sending` or `dispatching` our requests, we should `register` our request handlers to the MediatR.
 
 Here we register our request handlers (command handler and query handler) to the MediatR:
@@ -159,7 +159,7 @@ mediatr.RegisterHandler[*creatingProduct.CreateProductCommand, *creatingProducts
 mediatr.RegisterHandler[*gettingProduct.GetProductByIdQuery, *gettingProductDtos.GetProdctByIdQueryResponse](getProductByIdQueryHandler)
 ```
 
-### Sending Request to the MediatR
+#### Sending Request to the MediatR
 
 Finally, send a message through the mediator.
 
@@ -186,11 +186,11 @@ query := &GetProdctByIdQuery{
 mediatr.Send[*GetProductByIdQuery, *gettingProductsDtos.GetProductByIdQueryResponse](ctx, query)
 ```
 
-## Notification Strategy
+### Notification Strategy
 
 The `notification` message, can have `multiple handlers` and doesn't have any response, and it can handle an [event notification](https://martinfowler.com/articles/201701-event-driven.html) or notification in event driven architecture.
 
-### Creating a Notification Message
+#### Creating a Notification Message
 
 For creating a notification (event), that has multiple `handlers` and doesn't have any response, we could create an event notification as a `notification` like this:
 
@@ -206,7 +206,7 @@ type ProductCreatedEvent struct {
 ```
 This event doesn't have any response.
 
-### Creating Notification Handlers
+#### Creating Notification Handlers
 
 For handling our notification, we can create `multiple notification handlers` for each notification event. Each handler should implement the `NotificationHandler` interface.
 ```go
@@ -239,7 +239,7 @@ func (c *ProductCreatedEventHandler2) Handle(ctx context.Context, event *Product
 }
 ```
 
-### Registering Notification Handlers to the MediatR
+#### Registering Notification Handlers to the MediatR
 Before `publishing` our notifications, we should `register` our notification handlers to the MediatR.
 
 Here we register our notification handlers to the MediatR:
@@ -251,7 +251,7 @@ notificationHandler2 := &ProductCreatedEventHandler2{}
 mediatr.RegisterNotificationHandlers[*events.ProductCreatedEvent](notificationHandler1, notificationHandler2)
 ```
 
-### Publishing Notification to the MediatR
+#### Publishing Notification to the MediatR
 Finally, publish a notification event through the mediator.
 
 Here we publish our notification to the MediatR for dispatching them to the notification handlers:
@@ -268,7 +268,7 @@ productCreatedEvent := 	&ProductCreatedEvent {
 mediatr.Publish[*events.ProductCreatedEvent](ctx, productCreatedEvent)
 ```
 
-## Using Pipeline Behaviors
+## ⚒️ Using Pipeline Behaviors
 Sometimes we need to add some cross-cutting concerns before after running our request handlers like logging, metrics, circuit breaker, retry, etc. In this case we can use `PipelineBehavior`. It is actually is like a middleware or [decorator pattern](https://refactoring.guru/design-patterns/decorator).
 
 These behaviors will execute before or after running our request handlers with calling `Send` method for a request on the mediatr.
