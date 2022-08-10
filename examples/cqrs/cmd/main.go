@@ -76,7 +76,7 @@ func main() {
 
 	go func() {
 		if err := echo.Start(":9080"); err != nil {
-			log.Fatalf("Error starting Server: ", err)
+			log.Fatal("Error starting Server", err)
 		}
 	}()
 

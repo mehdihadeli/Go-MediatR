@@ -36,3 +36,11 @@ go.work
 
 # Built Visual Studio Code Extensions
 *.vsix
+
+*.exe
+*.test
+*.prof
+*.test
+*.out
+*.txt
+cover.html

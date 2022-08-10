@@ -65,7 +65,7 @@ func RegisterNotificationHandler[TEvent any](handler NotificationHandler[TEvent]
 	eventType := reflect.TypeOf(event)
 
 	handlers, exist := notificationHandlersRegistrations[eventType]
-	if exist == false {
+	if !exist {
 		notificationHandlersRegistrations[eventType] = []interface{}{handler}
 		return nil
 	}
