@@ -23,7 +23,7 @@ type PipelineBehavior interface {
 
 var requestHandlersRegistrations = map[reflect.Type]interface{}{}
 var notificationHandlersRegistrations = map[reflect.Type][]interface{}{}
-var pipelineBehaviours []interface{}
+var pipelineBehaviours []interface{} = []interface{}{}
 
 type Unit struct{}
 

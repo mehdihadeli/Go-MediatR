@@ -11,7 +11,38 @@ import (
 
 var testData []string
 
-func Test_RegisterRequestHandler_Should_Return_Error_If_Handler_Already_Registered(t *testing.T) {
+func TestRunner(t *testing.T) {
+	//https://pkg.go.dev/testing@master#hdr-Subtests_and_Sub_benchmarks
+	t.Run("A=request-response", func(t *testing.T) {
+		test := MediatRTests{T: t}
+		test.Test_RegisterRequestHandler_Should_Return_Error_If_Handler_Already_Registered()
+		test.Test_RegisterRequestHandler_Should_Register_All_Handlers()
+		test.Test_Send_Should_Throw_Error_If_No_Handler_Registered()
+		test.Test_Send_Should_Return_Error_If_Handler_Returns_Error()
+		test.Test_Send_Should_Dispatch_Request_To_Handler_And_Get_Response_Without_Pipeline()
+	})
+
+	t.Run("B=notifications", func(t *testing.T) {
+		test := MediatRTests{T: t}
+		test.Test_Publish_Should_Throw_Error_If_No_Handler_Registered()
+		test.Test_Publish_Should_Return_Error_If_Handler_Returns_Error()
+		test.Test_Publish_Should_Dispatch_Notification_To_All_Handlers_Without_Any_Response_And_Error()
+	})
+
+	t.Run("C=pipeline-behaviours", func(t *testing.T) {
+		test := MediatRTests{T: t}
+		test.Test_Register_Behaviours_Should_Register_Behaviours_In_The_Registry_Correctly()
+		test.Test_Register_Duplicate_Behaviours_Should_Throw_Error()
+		test.Test_Send_Should_Dispatch_Request_To_Handler_And_Get_Response_With_Pipeline()
+	})
+}
+
+type MediatRTests struct {
+	*testing.T
+}
+
+func (t *MediatRTests) Test_RegisterRequestHandler_Should_Return_Error_If_Handler_Already_Registered() {
+	defer cleanup()
 	expectedErr := fmt.Sprintf("registered handler already exists in the registry for message %s", "*mediatr.RequestTest")
 	handler1 := &RequestTestHandler{}
 	handler2 := &RequestTestHandler{}
@@ -25,7 +56,8 @@ func Test_RegisterRequestHandler_Should_Return_Error_If_Handler_Already_Register
 	assert.Equal(t, 1, count)
 }
 
-func Test_RegisterRequestHandler_Should_Register_All_Handlers(t *testing.T) {
+func (t *MediatRTests) Test_RegisterRequestHandler_Should_Register_All_Handlers() {
+	defer cleanup()
 	handler1 := &RequestTestHandler{}
 	handler2 := &RequestTestHandler2{}
 	err1 := RegisterRequestHandler[*RequestTest, *ResponseTest](handler1)
@@ -41,16 +73,17 @@ func Test_RegisterRequestHandler_Should_Register_All_Handlers(t *testing.T) {
 
 	count := len(requestHandlersRegistrations)
 	assert.Equal(t, 2, count)
-
 }
 
-func Test_Send_Should_Throw_Error_If_No_Handler_Registered(t *testing.T) {
+func (t *MediatRTests) Test_Send_Should_Throw_Error_If_No_Handler_Registered() {
+	defer cleanup()
 	expectedErr := fmt.Sprintf("no handlers for request %T", &RequestTest{})
 	_, err := Send[*RequestTest, *ResponseTest](context.Background(), &RequestTest{Data: "test"})
 	assert.Containsf(t, err.Error(), expectedErr, "expected error containing %q, got %s", expectedErr, err)
 }
 
-func Test_Send_Should_Return_Error_If_Handler_Returns_Error(t *testing.T) {
+func (t *MediatRTests) Test_Send_Should_Return_Error_If_Handler_Returns_Error() {
+	defer cleanup()
 	expectedErr := "error handling request"
 	handler3 := &RequestTestHandler3{}
 	errRegister := RegisterRequestHandler[*RequestTest2, *ResponseTest2](handler3)
@@ -61,7 +94,8 @@ func Test_Send_Should_Return_Error_If_Handler_Returns_Error(t *testing.T) {
 	assert.Containsf(t, err.Error(), expectedErr, "expected error containing %q, got %s", expectedErr, err)
 }
 
-func Test_Send_Should_Dispatch_Request_To_Handler_And_Get_Response_Without_Pipeline(t *testing.T) {
+func (t *MediatRTests) Test_Send_Should_Dispatch_Request_To_Handler_And_Get_Response_Without_Pipeline() {
+	defer cleanup()
 	handler := &RequestTestHandler{}
 	errRegister := RegisterRequestHandler[*RequestTest, *ResponseTest](handler)
 	if errRegister != nil {
@@ -74,7 +108,8 @@ func Test_Send_Should_Dispatch_Request_To_Handler_And_Get_Response_Without_Pipel
 	assert.Equal(t, "test", response.Data)
 }
 
-func Test_Send_Should_Dispatch_Request_To_Handler_And_Get_Response_With_Pipeline(t *testing.T) {
+func (t *MediatRTests) Test_Send_Should_Dispatch_Request_To_Handler_And_Get_Response_With_Pipeline() {
+	defer cleanup()
 	pip1 := &PipelineBehaviourTest{}
 	pip2 := &PipelineBehaviourTest2{}
 	err := RegisterRequestPipelineBehaviors(pip1, pip2)
@@ -96,7 +131,8 @@ func Test_Send_Should_Dispatch_Request_To_Handler_And_Get_Response_With_Pipeline
 	assert.Contains(t, testData, "PipelineBehaviourTest2")
 }
 
-func Test_RegisterNotificationHandler_Should_Register_Multiple_Handler_For_Notification(t *testing.T) {
+func (t *MediatRTests) Test_RegisterNotificationHandler_Should_Register_Multiple_Handler_For_Notification() {
+	defer cleanup()
 	handler1 := &NotificationTestHandler{}
 	handler2 := &NotificationTestHandler{}
 	err1 := RegisterNotificationHandler[*NotificationTest](handler1)
@@ -113,7 +149,8 @@ func Test_RegisterNotificationHandler_Should_Register_Multiple_Handler_For_Notif
 	assert.Equal(t, 2, count)
 }
 
-func Test_RegisterNotificationHandlers_Should_Register_Multiple_Handler_For_Notification(t *testing.T) {
+func (t *MediatRTests) Test_RegisterNotificationHandlers_Should_Register_Multiple_Handler_For_Notification() {
+	defer cleanup()
 	handler1 := &NotificationTestHandler{}
 	handler2 := &NotificationTestHandler{}
 	handler3 := &NotificationTestHandler4{}
@@ -127,13 +164,15 @@ func Test_RegisterNotificationHandlers_Should_Register_Multiple_Handler_For_Noti
 	assert.Equal(t, 3, count)
 }
 
-func Test_Publish_Should_Throw_Error_If_No_Handler_Registered(t *testing.T) {
+func (t *MediatRTests) Test_Publish_Should_Throw_Error_If_No_Handler_Registered() {
+	defer cleanup()
 	expectedErr := fmt.Sprintf("no handlers for notification %T", &NotificationTest{})
 	err := Publish[*NotificationTest](context.Background(), &NotificationTest{})
 	assert.Containsf(t, err.Error(), expectedErr, "expected error containing %q, got %s", expectedErr, err)
 }
 
-func Test_Publish_Should_Return_Error_If_Handler_Returns_Error(t *testing.T) {
+func (t *MediatRTests) Test_Publish_Should_Return_Error_If_Handler_Returns_Error() {
+	defer cleanup()
 	expectedErr := "error handling notification"
 	handler1 := &NotificationTestHandler{}
 	handler2 := &NotificationTestHandler{}
@@ -147,7 +186,8 @@ func Test_Publish_Should_Return_Error_If_Handler_Returns_Error(t *testing.T) {
 	assert.Containsf(t, err.Error(), expectedErr, "expected error containing %q, got %s", expectedErr, err)
 }
 
-func Test_Publish_Should_Dispatch_Notification_To_All_Handlers_Without_Any_Response_And_Error(t *testing.T) {
+func (t *MediatRTests) Test_Publish_Should_Dispatch_Notification_To_All_Handlers_Without_Any_Response_And_Error() {
+	defer cleanup()
 	handler1 := &NotificationTestHandler{}
 	handler2 := &NotificationTestHandler4{}
 	errRegister := RegisterNotificationHandlers[*NotificationTest](handler1, handler2)
@@ -161,7 +201,8 @@ func Test_Publish_Should_Dispatch_Notification_To_All_Handlers_Without_Any_Respo
 	assert.True(t, notification.Processed)
 }
 
-func Test_Register_Behaviours_Should_Register_Behaviours_In_The_Registry_Correctly(t *testing.T) {
+func (t *MediatRTests) Test_Register_Behaviours_Should_Register_Behaviours_In_The_Registry_Correctly() {
+	defer cleanup()
 	pip1 := &PipelineBehaviourTest{}
 	pip2 := &PipelineBehaviourTest2{}
 
@@ -174,7 +215,8 @@ func Test_Register_Behaviours_Should_Register_Behaviours_In_The_Registry_Correct
 	assert.Equal(t, 2, count)
 }
 
-func Test_Register_Duplicate_Behaviours_Should_Throw_Error(t *testing.T) {
+func (t *MediatRTests) Test_Register_Duplicate_Behaviours_Should_Throw_Error() {
+	defer cleanup()
 	pip1 := &PipelineBehaviourTest{}
 	pip2 := &PipelineBehaviourTest{}
 	err := RegisterRequestPipelineBehaviors(pip1, pip2)
@@ -316,4 +358,11 @@ func (c *PipelineBehaviourTest2) Handle(ctx context.Context, request interface{}
 	}
 
 	return res, nil
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+func cleanup() {
+	requestHandlersRegistrations = map[reflect.Type]interface{}{}
+	notificationHandlersRegistrations = map[reflect.Type][]interface{}{}
+	pipelineBehaviours = []interface{}{}
 }
