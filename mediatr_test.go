@@ -15,8 +15,8 @@ func TestRunner(t *testing.T) {
 	//https://pkg.go.dev/testing@master#hdr-Subtests_and_Sub_benchmarks
 	t.Run("A=request-response", func(t *testing.T) {
 		test := MediatRTests{T: t}
-		test.Test_RegisterRequestHandler_Should_Return_Error_If_Handler_Already_Registered()
-		test.Test_RegisterRequestHandler_Should_Register_All_Handlers()
+		test.Test_RegisterRequestHandler_Should_Return_Error_If_Handler_Already_Registered_For_Request()
+		test.Test_RegisterRequestHandler_Should_Register_All_Handlers_For_Different_Requests()
 		test.Test_Send_Should_Throw_Error_If_No_Handler_Registered()
 		test.Test_Send_Should_Return_Error_If_Handler_Returns_Error()
 		test.Test_Send_Should_Dispatch_Request_To_Handler_And_Get_Response_Without_Pipeline()
@@ -24,7 +24,7 @@ func TestRunner(t *testing.T) {
 
 	t.Run("B=notifications", func(t *testing.T) {
 		test := MediatRTests{T: t}
-		test.Test_Publish_Should_Throw_Error_If_No_Handler_Registered()
+		test.Test_Publish_Should_Pass_If_No_Handler_Registered()
 		test.Test_Publish_Should_Return_Error_If_Handler_Returns_Error()
 		test.Test_Publish_Should_Dispatch_Notification_To_All_Handlers_Without_Any_Response_And_Error()
 	})
@@ -41,7 +41,8 @@ type MediatRTests struct {
 	*testing.T
 }
 
-func (t *MediatRTests) Test_RegisterRequestHandler_Should_Return_Error_If_Handler_Already_Registered() {
+// Each request should have exactly one handler
+func (t *MediatRTests) Test_RegisterRequestHandler_Should_Return_Error_If_Handler_Already_Registered_For_Request() {
 	defer cleanup()
 	expectedErr := fmt.Sprintf("registered handler already exists in the registry for message %s", "*mediatr.RequestTest")
 	handler1 := &RequestTestHandler{}
@@ -56,7 +57,7 @@ func (t *MediatRTests) Test_RegisterRequestHandler_Should_Return_Error_If_Handle
 	assert.Equal(t, 1, count)
 }
 
-func (t *MediatRTests) Test_RegisterRequestHandler_Should_Register_All_Handlers() {
+func (t *MediatRTests) Test_RegisterRequestHandler_Should_Register_All_Handlers_For_Different_Requests() {
 	defer cleanup()
 	handler1 := &RequestTestHandler{}
 	handler2 := &RequestTestHandler2{}
@@ -77,7 +78,7 @@ func (t *MediatRTests) Test_RegisterRequestHandler_Should_Register_All_Handlers(
 
 func (t *MediatRTests) Test_Send_Should_Throw_Error_If_No_Handler_Registered() {
 	defer cleanup()
-	expectedErr := fmt.Sprintf("no handlers for request %T", &RequestTest{})
+	expectedErr := fmt.Sprintf("no handler for request %T", &RequestTest{})
 	_, err := Send[*RequestTest, *ResponseTest](context.Background(), &RequestTest{Data: "test"})
 	assert.Containsf(t, err.Error(), expectedErr, "expected error containing %q, got %s", expectedErr, err)
 }
@@ -164,11 +165,11 @@ func (t *MediatRTests) Test_RegisterNotificationHandlers_Should_Register_Multipl
 	assert.Equal(t, 3, count)
 }
 
-func (t *MediatRTests) Test_Publish_Should_Throw_Error_If_No_Handler_Registered() {
+// notifications could have zero or more handlers
+func (t *MediatRTests) Test_Publish_Should_Pass_If_No_Handler_Registered() {
 	defer cleanup()
-	expectedErr := fmt.Sprintf("no handlers for notification %T", &NotificationTest{})
 	err := Publish[*NotificationTest](context.Background(), &NotificationTest{})
-	assert.Containsf(t, err.Error(), expectedErr, "expected error containing %q, got %s", expectedErr, err)
+	assert.Nil(t, err)
 }
 
 func (t *MediatRTests) Test_Publish_Should_Return_Error_If_Handler_Returns_Error() {

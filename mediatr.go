@@ -97,7 +97,8 @@ func Send[TRequest any, TResponse any](ctx context.Context, request TRequest) (T
 	var response TResponse
 	handler, ok := requestHandlersRegistrations[requestType]
 	if !ok {
-		return *new(TResponse), errors.Errorf("no handlers for request %T", request)
+		// request-response strategy should have exactly one handler and if we can't find a corresponding handler, we should return an error
+		return *new(TResponse), errors.Errorf("no handler for request %T", request)
 	}
 
 	handlerValue, ok := handler.(RequestHandler[TRequest, TResponse])
@@ -149,7 +150,8 @@ func Publish[TNotification any](ctx context.Context, notification TNotification)
 
 	handlers, ok := notificationHandlersRegistrations[eventType]
 	if !ok {
-		return errors.Errorf("no handlers for notification %T", notification)
+		// notification strategy should have zero or more handlers, so it should run without any error if we can't find a corresponding handler
+		return nil
 	}
 
 	for _, handler := range handlers {
