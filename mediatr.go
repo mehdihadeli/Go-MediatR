@@ -2,12 +2,19 @@ package mediatr
 
 import (
 	"context"
+
 	"github.com/ahmetb/go-linq/v3"
 	"github.com/goccy/go-reflect"
 	"github.com/pkg/errors"
 )
 
+// RequestHandlerFunc is a continuation for the next task to execute in the pipeline
 type RequestHandlerFunc func() (interface{}, error)
+
+// PipelineBehavior is a Pipeline behavior for wrapping the inner handler.
+type PipelineBehavior interface {
+	Handle(ctx context.Context, request interface{}, next RequestHandlerFunc) (interface{}, error)
+}
 
 type RequestHandler[TRequest any, TResponse any] interface {
 	Handle(ctx context.Context, request TRequest) (TResponse, error)
@@ -15,10 +22,6 @@ type RequestHandler[TRequest any, TResponse any] interface {
 
 type NotificationHandler[TNotification any] interface {
 	Handle(ctx context.Context, notification TNotification) error
-}
-
-type PipelineBehavior interface {
-	Handle(ctx context.Context, request interface{}, next RequestHandlerFunc) (interface{}, error)
 }
 
 var requestHandlersRegistrations = map[reflect.Type]interface{}{}
