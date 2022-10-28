@@ -94,6 +94,14 @@ func RegisterNotificationHandlers[TEvent any](handlers ...NotificationHandler[TE
 	return nil
 }
 
+func ClearRequestRegistrations() {
+	requestHandlersRegistrations = map[reflect.Type]interface{}{}
+}
+
+func ClearNotificationRegistrations() {
+	notificationHandlersRegistrations = map[reflect.Type][]interface{}{}
+}
+
 // Send the request to its corresponding request handler.
 func Send[TRequest any, TResponse any](ctx context.Context, request TRequest) (TResponse, error) {
 	requestType := reflect.TypeOf(request)
