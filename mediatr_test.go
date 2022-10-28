@@ -6,6 +6,7 @@ import (
 	"github.com/goccy/go-reflect"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -20,6 +21,7 @@ func TestRunner(t *testing.T) {
 		test.Test_Send_Should_Throw_Error_If_No_Handler_Registered()
 		test.Test_Send_Should_Return_Error_If_Handler_Returns_Error()
 		test.Test_Send_Should_Dispatch_Request_To_Handler_And_Get_Response_Without_Pipeline()
+		test.Test_Clear_Request_Registrations()
 	})
 
 	t.Run("B=notifications", func(t *testing.T) {
@@ -27,6 +29,7 @@ func TestRunner(t *testing.T) {
 		test.Test_Publish_Should_Pass_If_No_Handler_Registered()
 		test.Test_Publish_Should_Return_Error_If_Handler_Returns_Error()
 		test.Test_Publish_Should_Dispatch_Notification_To_All_Handlers_Without_Any_Response_And_Error()
+		test.Test_Clear_Notifications_Registrations()
 	})
 
 	t.Run("C=pipeline-behaviours", func(t *testing.T) {
@@ -228,7 +231,32 @@ func (t *MediatRTests) Test_Register_Duplicate_Behaviours_Should_Throw_Error() {
 	assert.Contains(t, err.Error(), "registered behavior already exists in the registry")
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////
+func (t *MediatRTests) Test_Clear_Request_Registrations() {
+	handler1 := &RequestTestHandler{}
+	handler2 := &RequestTestHandler2{}
+	err1 := RegisterRequestHandler[*RequestTest, *ResponseTest](handler1)
+	err2 := RegisterRequestHandler[*RequestTest2, *ResponseTest2](handler2)
+	require.NoError(t, err1, err2)
+
+	ClearRequestRegistrations()
+
+	count := len(requestHandlersRegistrations)
+	assert.Equal(t, 0, count)
+}
+
+func (t *MediatRTests) Test_Clear_Notifications_Registrations() {
+	handler1 := &NotificationTestHandler{}
+	handler2 := &NotificationTestHandler4{}
+	errRegister := RegisterNotificationHandlers[*NotificationTest](handler1, handler2)
+	require.NoError(t, errRegister)
+
+	ClearNotificationRegistrations()
+	
+	count := len(notificationHandlersRegistrations)
+	assert.Equal(t, 0, count)
+}
+
+// /////////////////////////////////////////////////////////////////////////////////////////////
 type RequestTest struct {
 	Data string
 }
@@ -247,7 +275,7 @@ func (c *RequestTestHandler) Handle(ctx context.Context, request *RequestTest) (
 	return &ResponseTest{Data: request.Data}, nil
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////
+// /////////////////////////////////////////////////////////////////////////////////////////////
 type RequestTest2 struct {
 	Data string
 }
@@ -266,7 +294,7 @@ func (c *RequestTestHandler2) Handle(ctx context.Context, request *RequestTest2)
 	return &ResponseTest2{Data: request.Data}, nil
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////
+// /////////////////////////////////////////////////////////////////////////////////////////////
 type RequestTestHandler3 struct {
 }
 
@@ -274,7 +302,7 @@ func (c *RequestTestHandler3) Handle(ctx context.Context, request *RequestTest2)
 	return nil, errors.New("some error")
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////
+// /////////////////////////////////////////////////////////////////////////////////////////////
 type NotificationTest struct {
 	Data      string
 	Processed bool
@@ -291,7 +319,7 @@ func (c *NotificationTestHandler) Handle(ctx context.Context, notification *Noti
 	return nil
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////
+// /////////////////////////////////////////////////////////////////////////////////////////////
 type NotificationTest2 struct {
 	Data      string
 	Processed bool
@@ -317,7 +345,7 @@ func (c *NotificationTestHandler3) Handle(ctx context.Context, notification *Not
 	return errors.New("some error")
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////
+// /////////////////////////////////////////////////////////////////////////////////////////////
 type NotificationTestHandler4 struct {
 }
 
@@ -329,7 +357,7 @@ func (c *NotificationTestHandler4) Handle(ctx context.Context, notification *Not
 	return nil
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////
+// /////////////////////////////////////////////////////////////////////////////////////////////
 type PipelineBehaviourTest struct {
 }
 
@@ -345,7 +373,7 @@ func (c *PipelineBehaviourTest) Handle(ctx context.Context, request interface{},
 	return res, nil
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////
+// /////////////////////////////////////////////////////////////////////////////////////////////
 type PipelineBehaviourTest2 struct {
 }
 
@@ -361,7 +389,7 @@ func (c *PipelineBehaviourTest2) Handle(ctx context.Context, request interface{}
 	return res, nil
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////
+// /////////////////////////////////////////////////////////////////////////////////////////////
 func cleanup() {
 	requestHandlersRegistrations = map[reflect.Type]interface{}{}
 	notificationHandlersRegistrations = map[reflect.Type][]interface{}{}
