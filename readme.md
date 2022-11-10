@@ -66,7 +66,7 @@ type CreateProductCommandResponse struct {
 }
 
 // Query (Response)
-type GetProdctByIdQueryResponse struct {
+type GetProductByIdQueryResponse struct {
     ProductID   uuid.UUID `json:"productId"`
     Name        string    `json:"name"`
     Description string    `json:"description"`
