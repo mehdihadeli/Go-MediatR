@@ -14,7 +14,7 @@
 
 For decoupling some objects in a system we could use `Mediator` object as an interface, for decrease coupling between the objects. Mostly I uses this pattern when I use CQRS in my system.
 
-There are some samples for using this package [here](./examples).
+There are some samples for using this package [here](./examples), also I used this packages widely in [this microservices sample](https://github.com/mehdihadeli/store-golang-microservices)
 
 ## 🧰 Installation
 
