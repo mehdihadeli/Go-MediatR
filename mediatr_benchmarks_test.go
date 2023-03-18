@@ -1,4 +1,4 @@
-package mediatr
+package mediator
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 
 func Benchmark_Send(b *testing.B) {
 	// because benchmark method will run multiple times, we need to reset the request handler registry before each run.
-	requestHandlersRegistrations = make(map[reflect.Type]interface{})
+	requestHandlersRegistrations = make(map[reflect.Type]any)
 
 	handler := &RequestTestHandler{}
 	errRegister := RegisterRequestHandler[*RequestTest, *ResponseTest](handler)
@@ -28,7 +28,7 @@ func Benchmark_Send(b *testing.B) {
 
 func Benchmark_Publish(b *testing.B) {
 	// because benchmark method will run multiple times, we need to reset the notification handlers registry before each run.
-	notificationHandlersRegistrations = make(map[reflect.Type][]interface{})
+	notificationHandlersRegistrations = make(map[reflect.Type][]any)
 
 	handler := &NotificationTestHandler{}
 	handler2 := &NotificationTestHandler4{}

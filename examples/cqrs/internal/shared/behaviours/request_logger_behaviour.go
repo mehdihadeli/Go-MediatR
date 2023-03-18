@@ -2,14 +2,14 @@ package behaviours
 
 import (
 	"context"
-	"github.com/mehdihadeli/go-mediatr"
+	"github.com/ehsandavari/go-mediator"
 	"log"
 )
 
 type RequestLoggerBehaviour struct {
 }
 
-func (r *RequestLoggerBehaviour) Handle(ctx context.Context, request interface{}, next mediatr.RequestHandlerFunc) (interface{}, error) {
+func (r *RequestLoggerBehaviour) Handle(ctx context.Context, request interface{}, next mediator.RequestHandlerFunc) (interface{}, error) {
 	log.Printf("logging some stuff before handling the request")
 
 	response, err := next()

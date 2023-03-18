@@ -1,11 +1,11 @@
 package api
 
 import (
-	"github.com/mehdihadeli/go-mediatr"
-	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/features/creating_product/commands"
-	creatingProductsDtos "github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/features/creating_product/dtos"
-	gettingProductByIdDtos "github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/features/getting_product_by_id/dtos"
-	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/features/getting_product_by_id/queries"
+	"github.com/ehsandavari/go-mediator"
+	"github.com/ehsandavari/go-mediator/examples/cqrs/internal/products/features/creating_product/commands"
+	creatingProductsDtos "github.com/ehsandavari/go-mediator/examples/cqrs/internal/products/features/creating_product/dtos"
+	gettingProductByIdDtos "github.com/ehsandavari/go-mediator/examples/cqrs/internal/products/features/getting_product_by_id/dtos"
+	"github.com/ehsandavari/go-mediator/examples/cqrs/internal/products/features/getting_product_by_id/queries"
 	"net/http"
 
 	"github.com/go-playground/validator"
@@ -43,7 +43,7 @@ func (pc *ProductsController) createProduct() echo.HandlerFunc {
 		}
 
 		command := commands.NewCreateProductCommand(request.Name, request.Description, request.Price)
-		result, err := mediatr.Send[*commands.CreateProductCommand, *creatingProductsDtos.CreateProductCommandResponse](ctx.Request().Context(), command)
+		result, err := mediator.Send[*commands.CreateProductCommand, *creatingProductsDtos.CreateProductCommandResponse](ctx.Request().Context(), command)
 
 		if err != nil {
 			return err
@@ -76,7 +76,7 @@ func (pc *ProductsController) getProductByID() echo.HandlerFunc {
 			return err
 		}
 
-		queryResult, err := mediatr.Send[*queries.GetProductByIdQuery, *gettingProductByIdDtos.GetProductByIdQueryResponse](ctx.Request().Context(), query)
+		queryResult, err := mediator.Send[*queries.GetProductByIdQuery, *gettingProductByIdDtos.GetProductByIdQueryResponse](ctx.Request().Context(), query)
 
 		if err != nil {
 			return err

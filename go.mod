@@ -1,6 +1,6 @@
-module github.com/mehdihadeli/go-mediatr
+module github.com/ehsandavari/go-mediator
 
-go 1.18
+go 1.20
 
 require (
 	github.com/ahmetb/go-linq/v3 v3.2.0

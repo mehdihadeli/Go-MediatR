@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/models"
+	"github.com/ehsandavari/go-mediator/examples/cqrs/internal/products/models"
 
 	uuid "github.com/satori/go.uuid"
 )

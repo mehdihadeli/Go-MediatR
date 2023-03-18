@@ -2,21 +2,21 @@ package main
 
 import (
 	"context"
+	"github.com/ehsandavari/go-mediator"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/mehdihadeli/go-mediatr"
-	"github.com/mehdihadeli/go-mediatr/examples/cqrs/docs"
-	productApi "github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/api"
-	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/features/creating_product/commands"
-	creatingProductsDtos "github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/features/creating_product/dtos"
-	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/features/creating_product/events"
-	gettingProductByIdDtos "github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/features/getting_product_by_id/dtos"
-	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/features/getting_product_by_id/queries"
-	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/repository"
-	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/shared/behaviours"
+	"github.com/ehsandavari/go-mediator/examples/cqrs/docs"
+	productApi "github.com/ehsandavari/go-mediator/examples/cqrs/internal/products/api"
+	"github.com/ehsandavari/go-mediator/examples/cqrs/internal/products/features/creating_product/commands"
+	creatingProductsDtos "github.com/ehsandavari/go-mediator/examples/cqrs/internal/products/features/creating_product/dtos"
+	"github.com/ehsandavari/go-mediator/examples/cqrs/internal/products/features/creating_product/events"
+	gettingProductByIdDtos "github.com/ehsandavari/go-mediator/examples/cqrs/internal/products/features/getting_product_by_id/dtos"
+	"github.com/ehsandavari/go-mediator/examples/cqrs/internal/products/features/getting_product_by_id/queries"
+	"github.com/ehsandavari/go-mediator/examples/cqrs/internal/products/repository"
+	"github.com/ehsandavari/go-mediator/examples/cqrs/internal/shared/behaviours"
 
 	"github.com/labstack/echo/v4"
 	echoSwagger "github.com/swaggo/echo-swagger"
@@ -32,33 +32,33 @@ func main() {
 	productRepository := repository.NewInMemoryProductRepository()
 
 	//////////////////////////////////////////////////////////////////////////////////////////////
-	// Register request handlers to the mediatr
+	// Register request handlers to the mediator
 
 	createProductCommandHandler := commands.NewCreateProductCommandHandler(productRepository)
 	getByIdQueryHandler := queries.NewGetProductByIdHandler(productRepository)
 
-	err := mediatr.RegisterRequestHandler[*commands.CreateProductCommand, *creatingProductsDtos.CreateProductCommandResponse](createProductCommandHandler)
+	err := mediator.RegisterRequestHandler[*commands.CreateProductCommand, *creatingProductsDtos.CreateProductCommandResponse](createProductCommandHandler)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = mediatr.RegisterRequestHandler[*queries.GetProductByIdQuery, *gettingProductByIdDtos.GetProductByIdQueryResponse](getByIdQueryHandler)
+	err = mediator.RegisterRequestHandler[*queries.GetProductByIdQuery, *gettingProductByIdDtos.GetProductByIdQueryResponse](getByIdQueryHandler)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////////
-	// Register notification handlers to the mediatr
+	// Register notification handlers to the mediator
 	notificationHandler := events.NewProductCreatedEventHandler()
-	err = mediatr.RegisterNotificationHandler[*events.ProductCreatedEvent](notificationHandler)
+	err = mediator.RegisterNotificationHandler[*events.ProductCreatedEvent](notificationHandler)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////////
-	// Register request handlers pipeline to the mediatr
+	// Register request handlers pipeline to the mediator
 	loggerPipeline := &behaviours.RequestLoggerBehaviour{}
-	err = mediatr.RegisterRequestPipelineBehaviors(loggerPipeline)
+	err = mediator.RegisterRequestPipelineBehaviors(loggerPipeline)
 	if err != nil {
 		log.Fatal(err)
 	}

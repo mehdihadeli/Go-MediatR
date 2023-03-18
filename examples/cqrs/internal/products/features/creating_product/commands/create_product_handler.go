@@ -2,11 +2,11 @@ package commands
 
 import (
 	"context"
-	"github.com/mehdihadeli/go-mediatr"
-	creatingProductDtos "github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/features/creating_product/dtos"
-	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/features/creating_product/events"
-	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/models"
-	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/repository"
+	"github.com/ehsandavari/go-mediator"
+	creatingProductDtos "github.com/ehsandavari/go-mediator/examples/cqrs/internal/products/features/creating_product/dtos"
+	"github.com/ehsandavari/go-mediator/examples/cqrs/internal/products/features/creating_product/events"
+	"github.com/ehsandavari/go-mediator/examples/cqrs/internal/products/models"
+	"github.com/ehsandavari/go-mediator/examples/cqrs/internal/products/repository"
 )
 
 type CreateProductCommandHandler struct {
@@ -34,10 +34,10 @@ func (c *CreateProductCommandHandler) Handle(ctx context.Context, command *Creat
 
 	response := &creatingProductDtos.CreateProductCommandResponse{ProductID: createdProduct.ProductID}
 
-	// Publish notification event to the mediatr for dispatching to the notification handlers
+	// Publish notification event to the mediator for dispatching to the notification handlers
 
 	productCreatedEvent := events.NewProductCreatedEvent(createdProduct.ProductID, createdProduct.Name, createdProduct.Description, createdProduct.Price, createdProduct.CreatedAt)
-	err = mediatr.Publish[*events.ProductCreatedEvent](ctx, productCreatedEvent)
+	err = mediator.Publish[*events.ProductCreatedEvent](ctx, productCreatedEvent)
 	if err != nil {
 		return nil, err
 	}

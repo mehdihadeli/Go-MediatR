@@ -3,9 +3,9 @@ package queries
 import (
 	"context"
 	"fmt"
-	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products"
-	gettingProductByIdDtos "github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/features/getting_product_by_id/dtos"
-	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/repository"
+	"github.com/ehsandavari/go-mediator/examples/cqrs/internal/products"
+	gettingProductByIdDtos "github.com/ehsandavari/go-mediator/examples/cqrs/internal/products/features/getting_product_by_id/dtos"
+	"github.com/ehsandavari/go-mediator/examples/cqrs/internal/products/repository"
 
 	"github.com/pkg/errors"
 )
