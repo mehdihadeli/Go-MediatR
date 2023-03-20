@@ -88,14 +88,13 @@ func (t *mediatorTests) Test_Send_Should_Throw_Error_If_No_Handler_Registered() 
 
 func (t *mediatorTests) Test_Send_Should_Return_Error_If_Handler_Returns_Error() {
 	defer cleanup()
-	expectedErr := "error handling request"
 	handler3 := &RequestTestHandler3{}
 	errRegister := RegisterRequestHandler[*RequestTest2, *ResponseTest2](handler3)
 	if errRegister != nil {
 		t.Error(errRegister)
 	}
 	_, err := Send[*RequestTest2, *ResponseTest2](context.Background(), &RequestTest2{Data: "test"})
-	assert.Containsf(t, err.Error(), expectedErr, "expected error containing %q, got %s", expectedErr, err)
+	assert.NotNil(t, err)
 }
 
 func (t *mediatorTests) Test_Send_Should_Dispatch_Request_To_Handler_And_Get_Response_Without_Pipeline() {

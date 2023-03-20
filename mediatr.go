@@ -139,14 +139,16 @@ func Send[TRequest any, TResponse any](ctx context.Context, request TRequest) (T
 		response, err := v()
 
 		if err != nil {
-			return *new(TResponse), errors.Wrap(err, "error handling request")
+			// error handling request
+			return *new(TResponse), err
 		}
 
 		return response.(TResponse), nil
 	} else {
 		res, err := handlerValue.Handle(ctx, request)
 		if err != nil {
-			return *new(TResponse), errors.Wrap(err, "error handling request")
+			// error handling request
+			return *new(TResponse), err
 		}
 
 		response = res
