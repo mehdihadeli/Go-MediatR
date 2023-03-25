@@ -11,15 +11,15 @@ type requestHandlerFunc func() (any, IError)
 
 // iPipelineBehavior is a Pipeline behavior for wrapping the inner handler.
 type iPipelineBehavior interface {
-	handle(ctx context.Context, request any, next requestHandlerFunc) (any, IError)
+	Handle(ctx context.Context, request any, next requestHandlerFunc) (any, IError)
 }
 
 type iRequestHandler[TRequest any, TResponse any] interface {
-	handle(ctx context.Context, request TRequest) (TResponse, IError)
+	Handle(ctx context.Context, request TRequest) (TResponse, IError)
 }
 
 type iNotificationHandler[TNotification any] interface {
-	handle(ctx context.Context, notification TNotification) IError
+	Handle(ctx context.Context, notification TNotification) IError
 }
 
 var requestHandlersRegistrations = map[reflect.Type]any{}
@@ -105,17 +105,14 @@ func Send[TRequest any, TResponse any](ctx context.Context, request TRequest) (T
 		var reversPipes = reversOrder(pipelineBehaviours)
 
 		var lastHandler requestHandlerFunc = func() (any, IError) {
-			return requestHandler.handle(ctx, request)
+			return requestHandler.Handle(ctx, request)
 		}
 
-		aggregateResult := linq.From(reversPipes).AggregateWithSeedT(lastHandler, func(next requestHandlerFunc, pipe iPipelineBehavior) requestHandlerFunc {
-			pipeValue := pipe
+		aggregateResult := linq.From(reversPipes).AggregateWithSeedT(lastHandler, func(next requestHandlerFunc, pipelineBehavior iPipelineBehavior) requestHandlerFunc {
 			nexValue := next
-
 			var handlerFunc requestHandlerFunc = func() (any, IError) {
-				return pipeValue.handle(ctx, request, nexValue)
+				return pipelineBehavior.Handle(ctx, request, nexValue)
 			}
-
 			return handlerFunc
 		})
 
@@ -129,7 +126,7 @@ func Send[TRequest any, TResponse any](ctx context.Context, request TRequest) (T
 
 		return response.(TResponse), nil
 	} else {
-		res, err := requestHandler.handle(ctx, request)
+		res, err := requestHandler.Handle(ctx, request)
 		if err != nil {
 			// error handling request
 			return *new(TResponse), err
@@ -156,7 +153,7 @@ func Publish[TNotification any](ctx context.Context, notification TNotification)
 		if !ok {
 			return ErrorNotificationHandlerNotValid
 		}
-		if err := notificationHandler.handle(ctx, notification); err != nil {
+		if err := notificationHandler.Handle(ctx, notification); err != nil {
 			return err
 		}
 	}

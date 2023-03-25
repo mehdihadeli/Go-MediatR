@@ -244,7 +244,7 @@ type ResponseTest struct {
 type RequestTestHandler struct {
 }
 
-func (c *RequestTestHandler) handle(ctx context.Context, request *RequestTest) (*ResponseTest, IError) {
+func (c *RequestTestHandler) Handle(ctx context.Context, request *RequestTest) (*ResponseTest, IError) {
 	fmt.Println("RequestTestHandler.Handled")
 	testData = append(testData, "RequestTestHandler")
 
@@ -263,7 +263,7 @@ type ResponseTest2 struct {
 type RequestTestHandler2 struct {
 }
 
-func (c *RequestTestHandler2) handle(ctx context.Context, request *RequestTest2) (*ResponseTest2, IError) {
+func (c *RequestTestHandler2) Handle(ctx context.Context, request *RequestTest2) (*ResponseTest2, IError) {
 	fmt.Println("RequestTestHandler2.Handled")
 	testData = append(testData, "RequestTestHandler2")
 
@@ -274,7 +274,7 @@ func (c *RequestTestHandler2) handle(ctx context.Context, request *RequestTest2)
 type RequestTestHandler3 struct {
 }
 
-func (c *RequestTestHandler3) handle(ctx context.Context, request *RequestTest2) (*ResponseTest2, IError) {
+func (c *RequestTestHandler3) Handle(ctx context.Context, request *RequestTest2) (*ResponseTest2, IError) {
 	return nil, ErrorRequestHandlerAlreadyExists
 }
 
@@ -287,7 +287,7 @@ type NotificationTest struct {
 type NotificationTestHandler struct {
 }
 
-func (c *NotificationTestHandler) handle(ctx context.Context, notification *NotificationTest) IError {
+func (c *NotificationTestHandler) Handle(ctx context.Context, notification *NotificationTest) IError {
 	notification.Processed = true
 	fmt.Println("NotificationTestHandler.Handled")
 	testData = append(testData, "NotificationTestHandler")
@@ -304,7 +304,7 @@ type NotificationTest2 struct {
 type NotificationTestHandler2 struct {
 }
 
-func (c *NotificationTestHandler2) handle(ctx context.Context, notification *NotificationTest2) IError {
+func (c *NotificationTestHandler2) Handle(ctx context.Context, notification *NotificationTest2) IError {
 	notification.Processed = true
 	fmt.Println("NotificationTestHandler2.Handled")
 	testData = append(testData, "NotificationTestHandler2")
@@ -317,7 +317,7 @@ func (c *NotificationTestHandler2) handle(ctx context.Context, notification *Not
 type NotificationTestHandler3 struct {
 }
 
-func (c *NotificationTestHandler3) handle(ctx context.Context, notification *NotificationTest) IError {
+func (c *NotificationTestHandler3) Handle(ctx context.Context, notification *NotificationTest) IError {
 	return ErrorRequestHandlerAlreadyExists
 }
 
@@ -325,7 +325,7 @@ func (c *NotificationTestHandler3) handle(ctx context.Context, notification *Not
 type NotificationTestHandler4 struct {
 }
 
-func (c *NotificationTestHandler4) handle(ctx context.Context, notification *NotificationTest) IError {
+func (c *NotificationTestHandler4) Handle(ctx context.Context, notification *NotificationTest) IError {
 	notification.Processed = true
 	fmt.Println("NotificationTestHandler4.Handled")
 	testData = append(testData, "NotificationTestHandler4")
@@ -337,7 +337,7 @@ func (c *NotificationTestHandler4) handle(ctx context.Context, notification *Not
 type PipelineBehaviourTest struct {
 }
 
-func (c *PipelineBehaviourTest) handle(ctx context.Context, request any, next requestHandlerFunc) (any, IError) {
+func (c *PipelineBehaviourTest) Handle(ctx context.Context, request any, next requestHandlerFunc) (any, IError) {
 	fmt.Println("PipelineBehaviourTest.Handled")
 	testData = append(testData, "PipelineBehaviourTest")
 
@@ -353,7 +353,7 @@ func (c *PipelineBehaviourTest) handle(ctx context.Context, request any, next re
 type PipelineBehaviourTest2 struct {
 }
 
-func (c *PipelineBehaviourTest2) handle(ctx context.Context, request any, next requestHandlerFunc) (any, IError) {
+func (c *PipelineBehaviourTest2) Handle(ctx context.Context, request any, next requestHandlerFunc) (any, IError) {
 	fmt.Println("PipelineBehaviourTest2.Handled")
 	testData = append(testData, "PipelineBehaviourTest2")
 
