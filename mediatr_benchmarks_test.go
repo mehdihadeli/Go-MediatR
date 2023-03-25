@@ -33,10 +33,7 @@ func Benchmark_Publish(b *testing.B) {
 	handler := &NotificationTestHandler{}
 	handler2 := &NotificationTestHandler4{}
 
-	errRegister := RegisterNotificationHandlers[*NotificationTest](handler, handler2)
-	if errRegister != nil {
-		b.Error(errRegister)
-	}
+	RegisterNotificationHandlers[*NotificationTest](handler, handler2)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
