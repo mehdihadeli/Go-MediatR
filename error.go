@@ -5,22 +5,22 @@ type IError interface {
 	Code() uint
 }
 
-//go:generate stringer -type=Error -trimprefix=Error
+//go:generate stringer -type=tError -trimprefix=Error -output=error_string.go
 
-type Error uint
+type tError uint
 
 const (
-	ErrorRequestHandlerAlreadyExists Error = iota + 1
+	ErrorRequestHandlerAlreadyExists tError = iota + 1
 	ErrorRequestPipelineBehaviorAlreadyExists
 	ErrorRequestHandlerNotFound
 	ErrorRequestHandlerNotValid
 	ErrorNotificationHandlerNotValid
 )
 
-func (r Error) Error() string {
+func (r tError) Error() string {
 	return r.String()
 }
 
-func (r Error) Code() uint {
+func (r tError) Code() uint {
 	return uint(r)
 }

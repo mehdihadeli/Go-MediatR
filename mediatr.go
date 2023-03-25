@@ -92,7 +92,7 @@ func Send[TRequest any, TResponse any](ctx context.Context, request TRequest) (T
 	var response TResponse
 	handler, ok := requestHandlersRegistrations[requestType]
 	if !ok {
-		// request-response strategy should have exactly one handler and if we can't find a corresponding handler, we should return an IError
+		// request-response strategy should have exactly one handler and if we can't find a corresponding handler, we should return an iError
 		return *new(TResponse), ErrorRequestHandlerNotFound
 	}
 
