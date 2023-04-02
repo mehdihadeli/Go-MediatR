@@ -3,11 +3,12 @@ package mediatr
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/goccy/go-reflect"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 var testData []string
@@ -22,6 +23,10 @@ func TestRunner(t *testing.T) {
 		test.Test_Send_Should_Return_Error_If_Handler_Returns_Error()
 		test.Test_Send_Should_Dispatch_Request_To_Handler_And_Get_Response_Without_Pipeline()
 		test.Test_Clear_Request_Registrations()
+
+		test.Test_RegisterRequestHandlerFactory_Should_Return_Error_If_Handler_Already_Registered_For_Request()
+		test.Test_RegisterRequestHandlerFactory_Should_Register_All_Handlers_For_Different_Requests()
+		test.Test_Send_Should_Dispatch_Request_To_Factory()
 	})
 
 	t.Run("B=notifications", func(t *testing.T) {
@@ -30,6 +35,8 @@ func TestRunner(t *testing.T) {
 		test.Test_Publish_Should_Return_Error_If_Handler_Returns_Error()
 		test.Test_Publish_Should_Dispatch_Notification_To_All_Handlers_Without_Any_Response_And_Error()
 		test.Test_Clear_Notifications_Registrations()
+
+		test.Test_Publish_Should_Dispatch_Notification_To_All_Handlers_Factories_Without_Any_Response_And_Error()
 	})
 
 	t.Run("C=pipeline-behaviours", func(t *testing.T) {
@@ -42,6 +49,68 @@ func TestRunner(t *testing.T) {
 
 type MediatRTests struct {
 	*testing.T
+}
+
+func (t *MediatRTests) Test_Send_Should_Dispatch_Request_To_Factory() {
+	defer cleanup()
+	var factory1 RequestHandlerFactory[*RequestTest, *ResponseTest] = func() RequestHandler[*RequestTest, *ResponseTest] {
+		return &RequestTestHandler{}
+	}
+	errRegister := RegisterRequestHandlerFactory(factory1)
+	if errRegister != nil {
+		t.Error(errRegister)
+	}
+
+	response, err := Send[*RequestTest, *ResponseTest](context.Background(), &RequestTest{Data: "test"})
+	assert.Nil(t, err)
+	assert.IsType(t, &ResponseTest{}, response)
+	assert.Equal(t, "test", response.Data)
+}
+
+func (t *MediatRTests) Test_RegisterRequestHandlerFactory_Should_Return_Error_If_Handler_Already_Registered_For_Request() {
+	defer cleanup()
+
+	expectedErr := fmt.Sprintf("registered handler already exists in the registry for message %s", "*mediatr.RequestTest")
+
+	var factory1 RequestHandlerFactory[*RequestTest, *ResponseTest] = func() RequestHandler[*RequestTest, *ResponseTest] {
+		return &RequestTestHandler{}
+	}
+	var factory2 RequestHandlerFactory[*RequestTest, *ResponseTest] = func() RequestHandler[*RequestTest, *ResponseTest] {
+		return &RequestTestHandler{}
+	}
+
+	err1 := RegisterRequestHandlerFactory(factory1)
+	err2 := RegisterRequestHandlerFactory(factory2)
+
+	assert.Nil(t, err1)
+	assert.Containsf(t, err2.Error(), expectedErr, "expected error containing %q, got %s", expectedErr, err2)
+
+	count := len(requestHandlersRegistrations)
+	assert.Equal(t, 1, count)
+}
+
+func (t *MediatRTests) Test_RegisterRequestHandlerFactory_Should_Register_All_Handlers_For_Different_Requests() {
+	defer cleanup()
+	var factory1 RequestHandlerFactory[*RequestTest, *ResponseTest] = func() RequestHandler[*RequestTest, *ResponseTest] {
+		return &RequestTestHandler{}
+	}
+	var factory2 RequestHandlerFactory[*RequestTest2, *ResponseTest2] = func() RequestHandler[*RequestTest2, *ResponseTest2] {
+		return &RequestTestHandler2{}
+	}
+
+	err1 := RegisterRequestHandlerFactory(factory1)
+	err2 := RegisterRequestHandlerFactory(factory2)
+
+	if err1 != nil {
+		t.Errorf("error registering request handler: %s", err1)
+	}
+
+	if err2 != nil {
+		t.Errorf("error registering request handler: %s", err2)
+	}
+
+	count := len(requestHandlersRegistrations)
+	assert.Equal(t, 2, count)
 }
 
 // Each request should have exactly one handler
@@ -186,8 +255,29 @@ func (t *MediatRTests) Test_Publish_Should_Return_Error_If_Handler_Returns_Error
 	if errRegister != nil {
 		t.Error(errRegister)
 	}
+
 	err := Publish[*NotificationTest](context.Background(), &NotificationTest{})
 	assert.Containsf(t, err.Error(), expectedErr, "expected error containing %q, got %s", expectedErr, err)
+}
+
+func (t *MediatRTests) Test_Publish_Should_Dispatch_Notification_To_All_Handlers_Factories_Without_Any_Response_And_Error() {
+	defer cleanup()
+	var factory1 NotificationHandlerFactory[*NotificationTest] = func() NotificationHandler[*NotificationTest] {
+		return &NotificationTestHandler{}
+	}
+	var factory2 NotificationHandlerFactory[*NotificationTest] = func() NotificationHandler[*NotificationTest] {
+		return &NotificationTestHandler4{}
+	}
+
+	errRegister := RegisterNotificationHandlersFactories(factory1, factory2)
+	if errRegister != nil {
+		t.Error(errRegister)
+	}
+
+	notification := &NotificationTest{}
+	err := Publish[*NotificationTest](context.Background(), notification)
+	assert.Nil(t, err)
+	assert.True(t, notification.Processed)
 }
 
 func (t *MediatRTests) Test_Publish_Should_Dispatch_Notification_To_All_Handlers_Without_Any_Response_And_Error() {
@@ -251,7 +341,7 @@ func (t *MediatRTests) Test_Clear_Notifications_Registrations() {
 	require.NoError(t, errRegister)
 
 	ClearNotificationRegistrations()
-	
+
 	count := len(notificationHandlersRegistrations)
 	assert.Equal(t, 0, count)
 }
