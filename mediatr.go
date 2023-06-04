@@ -18,16 +18,19 @@ type iRequestHandler[TRequest any, TResponse any] interface {
 	Handle(ctx context.Context, request TRequest) (TResponse, IError)
 }
 
+type RequestHandlerFactory[TRequest any, TResponse any] func() iRequestHandler[TRequest, TResponse]
+
 type iNotificationHandler[TNotification any] interface {
 	Handle(ctx context.Context, notification TNotification) IError
 }
+
+type NotificationHandlerFactory[TNotification any] func() iNotificationHandler[TNotification]
 
 var requestHandlersRegistrations = map[reflect.Type]any{}
 var notificationHandlersRegistrations = map[reflect.Type][]any{}
 var pipelineBehaviours []any
 
-// RegisterRequestHandler register the request handler to mediator registry.
-func RegisterRequestHandler[TRequest any, TResponse any](handler iRequestHandler[TRequest, TResponse]) IError {
+func registerRequestHandler[TRequest any, TResponse any](handler any) error {
 	var request TRequest
 	requestType := reflect.TypeOf(request)
 
@@ -40,6 +43,16 @@ func RegisterRequestHandler[TRequest any, TResponse any](handler iRequestHandler
 	requestHandlersRegistrations[requestType] = handler
 
 	return nil
+}
+
+// RegisterRequestHandler register the request handler to mediatr registry.
+func RegisterRequestHandler[TRequest any, TResponse any](handler iRequestHandler[TRequest, TResponse]) error {
+	return registerRequestHandler[TRequest, TResponse](handler)
+}
+
+// RegisterRequestHandlerFactory register the request handler factory to mediatr registry.
+func RegisterRequestHandlerFactory[TRequest any, TResponse any](factory RequestHandlerFactory[TRequest, TResponse]) error {
+	return registerRequestHandler[TRequest, TResponse](factory)
 }
 
 // RegisterRequestPipelineBehaviors register the request behaviors to mediator registry.
@@ -58,8 +71,7 @@ func RegisterRequestPipelineBehaviors(behaviours ...iPipelineBehavior) IError {
 	return nil
 }
 
-// RegisterNotificationHandler register the notification handler to mediator registry.
-func RegisterNotificationHandler[TEvent any](handler iNotificationHandler[TEvent]) {
+func registerNotificationHandler[TEvent any](handler any) {
 	var event TEvent
 	eventType := reflect.TypeOf(event)
 
@@ -71,10 +83,27 @@ func RegisterNotificationHandler[TEvent any](handler iNotificationHandler[TEvent
 	notificationHandlersRegistrations[eventType] = append(handlers, handler)
 }
 
+// RegisterNotificationHandler register the notification handler to mediatr registry.
+func RegisterNotificationHandler[TEvent any](handler iNotificationHandler[TEvent]) {
+	registerNotificationHandler[TEvent](handler)
+}
+
+// RegisterNotificationHandlerFactory register the notification handler factory to mediatr registry.
+func RegisterNotificationHandlerFactory[TEvent any](factory NotificationHandlerFactory[TEvent]) {
+	registerNotificationHandler[TEvent](factory)
+}
+
 // RegisterNotificationHandlers register the notification handlers to mediator registry.
 func RegisterNotificationHandlers[TEvent any](handlers ...iNotificationHandler[TEvent]) {
 	for _, handler := range handlers {
 		RegisterNotificationHandler[TEvent](handler)
+	}
+}
+
+// RegisterNotificationHandlersFactories register the notification handlers factories to mediatr registry.
+func RegisterNotificationHandlersFactories[TEvent any](factories ...NotificationHandlerFactory[TEvent]) {
+	for _, handler := range factories {
+		RegisterNotificationHandlerFactory[TEvent](handler)
 	}
 }
 
@@ -84,6 +113,20 @@ func ClearRequestRegistrations() {
 
 func ClearNotificationRegistrations() {
 	notificationHandlersRegistrations = map[reflect.Type][]any{}
+}
+
+func buildRequestHandler[TRequest any, TResponse any](handler any) (iRequestHandler[TRequest, TResponse], bool) {
+	handlerValue, ok := handler.(iRequestHandler[TRequest, TResponse])
+	if !ok {
+		factory, ok := handler.(RequestHandlerFactory[TRequest, TResponse])
+		if !ok {
+			return nil, false
+		}
+
+		return factory(), true
+	}
+
+	return handlerValue, true
 }
 
 // Send the request to its corresponding request handler.
@@ -96,7 +139,7 @@ func Send[TRequest any, TResponse any](ctx context.Context, request TRequest) (T
 		return *new(TResponse), ErrorRequestHandlerNotFound
 	}
 
-	requestHandler, ok := handler.(iRequestHandler[TRequest, TResponse])
+	requestHandler, ok := buildRequestHandler[TRequest, TResponse](handler)
 	if !ok {
 		return *new(TResponse), ErrorRequestHandlerNotValid
 	}
@@ -138,6 +181,20 @@ func Send[TRequest any, TResponse any](ctx context.Context, request TRequest) (T
 	return response, nil
 }
 
+func buildNotificationHandler[TNotification any](handler any) (iNotificationHandler[TNotification], bool) {
+	handlerValue, ok := handler.(iNotificationHandler[TNotification])
+	if !ok {
+		factory, ok := handler.(NotificationHandlerFactory[TNotification])
+		if !ok {
+			return nil, false
+		}
+
+		return factory(), true
+	}
+
+	return handlerValue, true
+}
+
 // Publish the notification event to its corresponding notification handler.
 func Publish[TNotification any](ctx context.Context, notification TNotification) IError {
 	eventType := reflect.TypeOf(notification)
@@ -149,7 +206,7 @@ func Publish[TNotification any](ctx context.Context, notification TNotification)
 	}
 
 	for _, handler := range handlers {
-		notificationHandler, ok := handler.(iNotificationHandler[TNotification])
+		notificationHandler, ok := buildNotificationHandler[TNotification](handler)
 		if !ok {
 			return ErrorNotificationHandlerNotValid
 		}
