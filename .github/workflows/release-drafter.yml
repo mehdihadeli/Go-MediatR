@@ -15,13 +15,16 @@ jobs:
     permissions:
       # write permission is required to create a github release
       contents: write
-    
+      # write permission is required for autolabeler
+      # otherwise, read permission is required at least
+      pull-requests: write
+
     steps:
       - name: Update Release Draft
         uses: release-drafter/release-drafter@v5
         id: semantic
         with:
-         config-name: release-drafter.yml
+          config-name: release-drafter.yml
         ## Default versioning just increase the path version as default. but the can use minor, patch and breaking-changes labels to apply semver
         #  version: 1.29.1
         env:
@@ -30,5 +33,3 @@ jobs:
       # - name: Do something when a new release published
       #   run: |
       #     echo ${{ $RESOLVED_VERSION steps.semantic.outputs }}
-
-          

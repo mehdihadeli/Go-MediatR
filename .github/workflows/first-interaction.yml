@@ -11,6 +11,13 @@ jobs:
   first-interaction:
     runs-on: ubuntu-latest
     name: First interaction
+
+    # https://github.com/actions/first-interaction/issues/10#issuecomment-1278292860
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+
     steps:
       - uses: actions/first-interaction@v1
         with:
