@@ -22,5 +22,5 @@ jobs:
       - uses: actions/first-interaction@v1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          issue-message: "Welcome to go-mediatr. Thank you ${{ github.event.pull_request.user.login }} for reporting your first issue. Please check out our [contributor guide](https://github.com/mehdihadeli/ecommerce-microservices/blob/develop/CONTRIBUTION.md)."
-          pr-message: "Thank you ${{ github.event.pull_request.user.login }} for your first pull request to go-mediatr repository. Please check out our [contributors guide](https://github.com/mehdihadeli/ecommerce-microservices/blob/develop/CONTRIBUTION.md)."
+          issue-message: "Welcome to go-mediatr. Thank you ${{ github.event.pull_request.user.login }} for reporting your first issue. Please check out our [contributor guide](https://github.com/mehdihadeli/go-mediatr/blob/main/CONTRIBUTION.md)."
+          pr-message: "Thank you ${{ github.event.pull_request.user.login }} for your first pull request to go-mediatr repository. Please check out our [contributors guide](https://github.com/mehdihadeli/go-ecommerce-microservices/blob/main/CONTRIBUTION.md)."
