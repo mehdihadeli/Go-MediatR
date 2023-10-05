@@ -2,8 +2,9 @@ package behaviours
 
 import (
 	"context"
-	"github.com/mehdihadeli/go-mediatr"
 	"log"
+
+	"github.com/mehdihadeli/go-mediatr"
 )
 
 type RequestLoggerBehaviour struct {
@@ -12,7 +13,10 @@ type RequestLoggerBehaviour struct {
 func (r *RequestLoggerBehaviour) Handle(ctx context.Context, request interface{}, next mediatr.RequestHandlerFunc) (interface{}, error) {
 	log.Printf("logging some stuff before handling the request")
 
-	response, err := next()
+	// https://golang.org/pkg/context/#Context
+	ctx = context.WithValue(ctx, "logger_pipeline", true)
+
+	response, err := next(ctx)
 	if err != nil {
 		return nil, err
 	}
