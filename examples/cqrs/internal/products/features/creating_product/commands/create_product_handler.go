@@ -2,6 +2,8 @@ package commands
 
 import (
 	"context"
+	"fmt"
+
 	"github.com/mehdihadeli/go-mediatr"
 	creatingProductDtos "github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/features/creating_product/dtos"
 	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/features/creating_product/events"
@@ -18,6 +20,10 @@ func NewCreateProductCommandHandler(productRepository *repository.InMemoryProduc
 }
 
 func (c *CreateProductCommandHandler) Handle(ctx context.Context, command *CreateProductCommand) (*creatingProductDtos.CreateProductCommandResponse, error) {
+	isLoggerPipelineEnabled := ctx.Value("logger_pipeline").(bool)
+	if isLoggerPipelineEnabled {
+		fmt.Println("[CreateProductCommandHandler]: logging pipeline is enabled")
+	}
 
 	product := &models.Product{
 		ProductID:   command.ProductID,

@@ -9,7 +9,7 @@ import (
 )
 
 // RequestHandlerFunc is a continuation for the next task to execute in the pipeline
-type RequestHandlerFunc func() (interface{}, error)
+type RequestHandlerFunc func(ctx context.Context) (interface{}, error)
 
 // PipelineBehavior is a Pipeline behavior for wrapping the inner handler.
 type PipelineBehavior interface {
@@ -116,7 +116,7 @@ func RegisterNotificationHandlers[TEvent any](handlers ...NotificationHandler[TE
 	return nil
 }
 
-// RegisterNotificationHandlers register the notification handlers factories to mediatr registry.
+// RegisterNotificationHandlersFactories register the notification handlers factories to mediatr registry.
 func RegisterNotificationHandlersFactories[TEvent any](factories ...NotificationHandlerFactory[TEvent]) error {
 	if len(factories) == 0 {
 		return errors.New("no handlers provided")
@@ -172,7 +172,7 @@ func Send[TRequest any, TResponse any](ctx context.Context, request TRequest) (T
 	if len(pipelineBehaviours) > 0 {
 		var reversPipes = reversOrder(pipelineBehaviours)
 
-		var lastHandler RequestHandlerFunc = func() (interface{}, error) {
+		var lastHandler RequestHandlerFunc = func(ctx context.Context) (interface{}, error) {
 			return handlerValue.Handle(ctx, request)
 		}
 
@@ -180,7 +180,7 @@ func Send[TRequest any, TResponse any](ctx context.Context, request TRequest) (T
 			pipeValue := pipe
 			nexValue := next
 
-			var handlerFunc RequestHandlerFunc = func() (interface{}, error) {
+			var handlerFunc RequestHandlerFunc = func(ctx context.Context) (interface{}, error) {
 				return pipeValue.Handle(ctx, request, nexValue)
 			}
 
@@ -188,7 +188,7 @@ func Send[TRequest any, TResponse any](ctx context.Context, request TRequest) (T
 		})
 
 		v := aggregateResult.(RequestHandlerFunc)
-		response, err := v()
+		response, err := v(ctx)
 
 		if err != nil {
 			return *new(TResponse), errors.Wrap(err, "error handling request")

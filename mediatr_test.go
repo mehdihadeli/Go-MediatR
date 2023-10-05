@@ -455,7 +455,7 @@ func (c *PipelineBehaviourTest) Handle(ctx context.Context, request interface{},
 	fmt.Println("PipelineBehaviourTest.Handled")
 	testData = append(testData, "PipelineBehaviourTest")
 
-	res, err := next()
+	res, err := next(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -471,7 +471,7 @@ func (c *PipelineBehaviourTest2) Handle(ctx context.Context, request interface{}
 	fmt.Println("PipelineBehaviourTest2.Handled")
 	testData = append(testData, "PipelineBehaviourTest2")
 
-	res, err := next()
+	res, err := next(ctx)
 	if err != nil {
 		return nil, err
 	}
