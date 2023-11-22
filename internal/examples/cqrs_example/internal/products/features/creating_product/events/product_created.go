@@ -1,8 +1,9 @@
 package events
 
 import (
-	uuid "github.com/satori/go.uuid"
 	"time"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 type ProductCreatedEvent struct {
