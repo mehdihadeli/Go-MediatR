@@ -3,11 +3,12 @@ package queries
 import (
 	"context"
 	"fmt"
-	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products"
-	gettingProductByIdDtos "github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/features/getting_product_by_id/dtos"
-	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/repository"
 
 	"github.com/pkg/errors"
+
+	"cqrsexample/internal/products"
+	"cqrsexample/internal/products/features/getting_product_by_id/dtos"
+	"cqrsexample/internal/products/repository"
 )
 
 type GetProductByIdQueryHandler struct {
@@ -18,7 +19,7 @@ func NewGetProductByIdHandler(productRepository *repository.InMemoryProductRepos
 	return &GetProductByIdQueryHandler{productRepository: productRepository}
 }
 
-func (q *GetProductByIdQueryHandler) Handle(ctx context.Context, query *GetProductByIdQuery) (*gettingProductByIdDtos.GetProductByIdQueryResponse, error) {
+func (q *GetProductByIdQueryHandler) Handle(ctx context.Context, query *GetProductByIdQuery) (*dtos.GetProductByIdQueryResponse, error) {
 	product, err := q.productRepository.GetProductById(ctx, query.ProductID)
 
 	if err != nil {
@@ -27,5 +28,5 @@ func (q *GetProductByIdQueryHandler) Handle(ctx context.Context, query *GetProdu
 
 	productDto := products.MapProductToProductDto(product)
 
-	return &gettingProductByIdDtos.GetProductByIdQueryResponse{Product: productDto}, nil
+	return &dtos.GetProductByIdQueryResponse{Product: productDto}, nil
 }

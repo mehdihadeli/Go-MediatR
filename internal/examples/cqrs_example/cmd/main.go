@@ -7,16 +7,16 @@ import (
 	"os/signal"
 	"syscall"
 
+	"cqrsexample/docs"
+	"cqrsexample/internal/products/api"
+	"cqrsexample/internal/products/features/creating_product/commands"
+	"cqrsexample/internal/products/features/creating_product/dtos"
+	"cqrsexample/internal/products/features/creating_product/events"
+	dtos2 "cqrsexample/internal/products/features/getting_product_by_id/dtos"
+	"cqrsexample/internal/products/features/getting_product_by_id/queries"
+	"cqrsexample/internal/products/repository"
+	"cqrsexample/internal/shared/behaviours"
 	"github.com/mehdihadeli/go-mediatr"
-	"github.com/mehdihadeli/go-mediatr/examples/cqrs/docs"
-	productApi "github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/api"
-	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/features/creating_product/commands"
-	creatingProductsDtos "github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/features/creating_product/dtos"
-	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/features/creating_product/events"
-	gettingProductByIdDtos "github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/features/getting_product_by_id/dtos"
-	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/features/getting_product_by_id/queries"
-	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/repository"
-	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/shared/behaviours"
 
 	"github.com/labstack/echo/v4"
 	echoSwagger "github.com/swaggo/echo-swagger"
@@ -37,12 +37,12 @@ func main() {
 	createProductCommandHandler := commands.NewCreateProductCommandHandler(productRepository)
 	getByIdQueryHandler := queries.NewGetProductByIdHandler(productRepository)
 
-	err := mediatr.RegisterRequestHandler[*commands.CreateProductCommand, *creatingProductsDtos.CreateProductCommandResponse](createProductCommandHandler)
+	err := mediatr.RegisterRequestHandler[*commands.CreateProductCommand, *dtos.CreateProductCommandResponse](createProductCommandHandler)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = mediatr.RegisterRequestHandler[*queries.GetProductByIdQuery, *gettingProductByIdDtos.GetProductByIdQueryResponse](getByIdQueryHandler)
+	err = mediatr.RegisterRequestHandler[*queries.GetProductByIdQuery, *dtos2.GetProductByIdQueryResponse](getByIdQueryHandler)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -65,9 +65,9 @@ func main() {
 
 	//////////////////////////////////////////////////////////////////////////////////////////////
 	// Controllers setup
-	controller := productApi.NewProductsController(echo)
+	controller := api.NewProductsController(echo)
 
-	productApi.MapProductsRoutes(echo, controller)
+	api.MapProductsRoutes(echo, controller)
 
 	docs.SwaggerInfo.Version = "1.0"
 	docs.SwaggerInfo.Title = "Catalogs Write-Service Api"

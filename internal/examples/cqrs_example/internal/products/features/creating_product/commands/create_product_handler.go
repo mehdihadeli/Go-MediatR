@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"cqrsexample/internal/products/features/creating_product/dtos"
+	"cqrsexample/internal/products/features/creating_product/events"
+	"cqrsexample/internal/products/models"
+	"cqrsexample/internal/products/repository"
 	"github.com/mehdihadeli/go-mediatr"
-	creatingProductDtos "github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/features/creating_product/dtos"
-	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/features/creating_product/events"
-	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/models"
-	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/repository"
 )
 
 type CreateProductCommandHandler struct {
@@ -19,7 +19,7 @@ func NewCreateProductCommandHandler(productRepository *repository.InMemoryProduc
 	return &CreateProductCommandHandler{productRepository: productRepository}
 }
 
-func (c *CreateProductCommandHandler) Handle(ctx context.Context, command *CreateProductCommand) (*creatingProductDtos.CreateProductCommandResponse, error) {
+func (c *CreateProductCommandHandler) Handle(ctx context.Context, command *CreateProductCommand) (*dtos.CreateProductCommandResponse, error) {
 	isLoggerPipelineEnabled := ctx.Value("logger_pipeline").(bool)
 	if isLoggerPipelineEnabled {
 		fmt.Println("[CreateProductCommandHandler]: logging pipeline is enabled")
@@ -38,7 +38,7 @@ func (c *CreateProductCommandHandler) Handle(ctx context.Context, command *Creat
 		return nil, err
 	}
 
-	response := &creatingProductDtos.CreateProductCommandResponse{ProductID: createdProduct.ProductID}
+	response := &dtos.CreateProductCommandResponse{ProductID: createdProduct.ProductID}
 
 	// Publish notification event to the mediatr for dispatching to the notification handlers
 

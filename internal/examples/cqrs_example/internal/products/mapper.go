@@ -1,8 +1,8 @@
 package products
 
 import (
-	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/dtos"
-	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/models"
+	"cqrsexample/internal/products/dtos"
+	"cqrsexample/internal/products/models"
 )
 
 func MapProductToProductDto(product *models.Product) *dtos.ProductDto {

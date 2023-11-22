@@ -1,15 +1,16 @@
 package api
 
 import (
-	"github.com/mehdihadeli/go-mediatr"
-	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/features/creating_product/commands"
-	creatingProductsDtos "github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/features/creating_product/dtos"
-	gettingProductByIdDtos "github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/features/getting_product_by_id/dtos"
-	"github.com/mehdihadeli/go-mediatr/examples/cqrs/internal/products/features/getting_product_by_id/queries"
 	"net/http"
 
 	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
+
+	"cqrsexample/internal/products/features/creating_product/commands"
+	dtos3 "cqrsexample/internal/products/features/creating_product/dtos"
+	"cqrsexample/internal/products/features/getting_product_by_id/dtos"
+	"cqrsexample/internal/products/features/getting_product_by_id/queries"
+	"github.com/mehdihadeli/go-mediatr"
 )
 
 type ProductsController struct {
@@ -33,7 +34,7 @@ func NewProductsController(echo *echo.Echo) *ProductsController {
 func (pc *ProductsController) createProduct() echo.HandlerFunc {
 
 	return func(ctx echo.Context) error {
-		request := &creatingProductsDtos.CreateProductRequestDto{}
+		request := &dtos3.CreateProductRequestDto{}
 		if err := ctx.Bind(request); err != nil {
 			return err
 		}
@@ -43,7 +44,7 @@ func (pc *ProductsController) createProduct() echo.HandlerFunc {
 		}
 
 		command := commands.NewCreateProductCommand(request.Name, request.Description, request.Price)
-		result, err := mediatr.Send[*commands.CreateProductCommand, *creatingProductsDtos.CreateProductCommandResponse](ctx.Request().Context(), command)
+		result, err := mediatr.Send[*commands.CreateProductCommand, *dtos3.CreateProductCommandResponse](ctx.Request().Context(), command)
 
 		if err != nil {
 			return err
@@ -65,7 +66,7 @@ func (pc *ProductsController) createProduct() echo.HandlerFunc {
 func (pc *ProductsController) getProductByID() echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 
-		request := &gettingProductByIdDtos.GetProductByIdRequestDto{}
+		request := &dtos.GetProductByIdRequestDto{}
 		if err := ctx.Bind(request); err != nil {
 			return err
 		}
@@ -76,7 +77,7 @@ func (pc *ProductsController) getProductByID() echo.HandlerFunc {
 			return err
 		}
 
-		queryResult, err := mediatr.Send[*queries.GetProductByIdQuery, *gettingProductByIdDtos.GetProductByIdQueryResponse](ctx.Request().Context(), query)
+		queryResult, err := mediatr.Send[*queries.GetProductByIdQuery, *dtos.GetProductByIdQueryResponse](ctx.Request().Context(), query)
 
 		if err != nil {
 			return err
