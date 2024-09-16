@@ -146,10 +146,6 @@ dependencies:
 chore:
 - head-branch:
   - '^(chore)(\([a-z ]+\))?\/.'
-- changed-files:
-  - all-globs-to-all-files: '!src/*'
-  - all-globs-to-all-files: '!tests/*'
-  - all-globs-to-all-files: '!.github/*'
 
 test:
 - head-branch:
