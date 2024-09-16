@@ -2,47 +2,26 @@ name: CI
 
 on:
   push:
-    branches: 
-      - dev
-      - main
-      - fix/*
-      - build/*
-      - test/*
-      - ci/*
-      - feat/*
+    branches:
+      - "main"
   pull_request:
-    branches: 
-      - dev
-      - main
+    branches:
+      - "main"
 
 jobs:
-
-  build-test:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: setup go
-      uses: actions/setup-go@v3
-      with:
-        go-version: 1.18
-
-    - name: build
-      run: go build -v ./...
-
-    - name: test
-      run: go test -v -coverprofile=profile.cov ./...
-
-    - name: send coverage
-      uses: shogo82148/actions-goveralls@v1
-      with:
-        path-to-profile: profile.cov
-
-  lint:
-    name: lint
+  pre-checks:
+    name: Pre-Checks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
+      - name: Conventional Commits Check
+        uses: amannn/action-semantic-pull-request@v5
+        # Only run on pull request events
+        if: github.event_name == 'pull_request'
+        id: check-pull-request-title-conventional-commits
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: setup go
         uses: actions/setup-go@v3
@@ -53,3 +32,25 @@ jobs:
         uses: golangci/golangci-lint-action@v3
         with:
           version: latest
+
+  build-test:
+    runs-on: ubuntu-latest
+    needs: pre-checks
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: setup go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.18
+
+      - name: build
+        run: go build -v ./...
+
+      - name: test
+        run: go test -v -coverprofile=profile.cov ./...
+
+      - name: send coverage
+        uses: shogo82148/actions-goveralls@v1
+        with:
+          path-to-profile: profile.cov
