@@ -2,9 +2,13 @@ name: Auto Labeler
 
 on:
   pull_request:
-    types: [opened, edited, synchronize, ready_for_review]
-
-  pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+      - unlabeled
+  # pull_request_target:
 
 jobs:
   auto-labeler:
@@ -20,13 +24,12 @@ jobs:
       # checks: write
 
     steps:
-      ## doesn't work
-      # - uses: release-drafter/release-drafter@v6
-      #   with:
-      #     config-name: release-drafter.yml
-      #     disable-releaser: true # releaser mode is disabled.
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: release-drafter/release-drafter@v6
+        with:
+          config-name: release-drafter.yml
+          disable-releaser: true # releaser mode is disabled.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # - uses: fuxingloh/multi-labeler@v1
       #   name: conventional-commits-pull-request-labeler
@@ -34,14 +37,14 @@ jobs:
       #     github-token: ${{secrets.GITHUB_TOKEN}} # optional, default to '${{ github.token }}'
       #     config-path: .github/multi-labeler.yml # optional, default to '.github/labeler.yml'
 
-      # https://github.com/actions/labeler
-      - uses: actions/labeler@v5
-        with:
-          repo-token: "${{ secrets.GITHUB_TOKEN }}"
-          sync-labels: true
+      # # https://github.com/actions/labeler
+      # - uses: actions/labeler@v5
+      #   with:
+      #     repo-token: "${{ secrets.GITHUB_TOKEN }}"
+      #     sync-labels: true
 
-        # https://docs.github.com/en/actions/using-workflows/about-workflows#creating-dependent-jobs
-        # https://docs.github.com/en/actions/using-jobs/using-jobs-in-a-workflow
+      # https://docs.github.com/en/actions/using-workflows/about-workflows#creating-dependent-jobs
+      # https://docs.github.com/en/actions/using-jobs/using-jobs-in-a-workflow
       - name: check-conventional-commits-labels
         uses: docker://agilepathway/pull-request-label-checker:latest
         if: success()
