@@ -13,7 +13,7 @@ jobs:
     name: Pre-Checks
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Conventional Commits Check
         uses: amannn/action-semantic-pull-request@v5
@@ -24,12 +24,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: setup go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
-          go-version: 1.18
+          go-version: 1.24
 
       - name: lint
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v7
         with:
           version: latest
 
@@ -37,10 +37,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: pre-checks
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: setup go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: 1.18
 

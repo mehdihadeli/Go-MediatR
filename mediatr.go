@@ -3,7 +3,6 @@ package mediatr
 import (
 	"context"
 
-	"github.com/ahmetb/go-linq/v3"
 	"github.com/goccy/go-reflect"
 	"github.com/pkg/errors"
 )
@@ -175,26 +174,23 @@ func Send[TRequest any, TResponse any](ctx context.Context, request TRequest) (T
 		var lastHandler RequestHandlerFunc = func(ctx context.Context) (interface{}, error) {
 			return handlerValue.Handle(ctx, request)
 		}
+		
+        aggregateResult := lastHandler
+        for _, pipe := range reversPipes {
+            pipeValue := pipe.(PipelineBehavior) 
+            currentNext := aggregateResult
+            
+            aggregateResult = func(ctx context.Context) (interface{}, error) {
+                return pipeValue.Handle(ctx, request, currentNext)
+            }
+        }
 
-		aggregateResult := linq.From(reversPipes).AggregateWithSeedT(lastHandler, func(next RequestHandlerFunc, pipe PipelineBehavior) RequestHandlerFunc {
-			pipeValue := pipe
-			nexValue := next
+        response, err := aggregateResult(ctx)
+        if err != nil {
+            return *new(TResponse), errors.Wrap(err, "error handling request")
+        }
 
-			var handlerFunc RequestHandlerFunc = func(ctx context.Context) (interface{}, error) {
-				return pipeValue.Handle(ctx, request, nexValue)
-			}
-
-			return handlerFunc
-		})
-
-		v := aggregateResult.(RequestHandlerFunc)
-		response, err := v(ctx)
-
-		if err != nil {
-			return *new(TResponse), errors.Wrap(err, "error handling request")
-		}
-
-		return response.(TResponse), nil
+        return response.(TResponse), nil
 	} else {
 		res, err := handlerValue.Handle(ctx, request)
 		if err != nil {

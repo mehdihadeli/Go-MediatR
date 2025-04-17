@@ -1,12 +1,12 @@
 module github.com/mehdihadeli/go-mediatr
 
-go 1.18
+go 1.24
 
 require (
 	github.com/ahmetb/go-linq/v3 v3.2.0
 	github.com/goccy/go-reflect v1.2.0
 	github.com/pkg/errors v0.9.1
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.10.0
 )
 
 require (
