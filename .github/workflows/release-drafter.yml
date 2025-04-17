@@ -18,7 +18,6 @@ jobs:
     steps:
       - name: Update Release Draft
         uses: release-drafter/release-drafter@v6
-        id: semantic
         with:
           config-name: release-drafter.yml
           disable-autolabeler: true
@@ -26,7 +25,3 @@ jobs:
         #  version: 1.29.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # - name: Do something when a new release published
-      #   run: |
-      #     echo ${{ $RESOLVED_VERSION steps.semantic.outputs }}

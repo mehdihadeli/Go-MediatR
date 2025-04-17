@@ -3,7 +3,7 @@
   <div align="center">
     <a href="https://github.com/mehdihadeli/Go-MediatR/actions/workflows/ci.yml"><img alt="build-status" src="https://github.com/mehdihadeli/Go-MediatR/actions/workflows/ci.yml/badge.svg?branch=main&style=flat-square"/></a>
     <a href="https://goreportcard.com/report/github.com/mehdihadeli/Go-MediatR" ><img alt="go report" src="https://goreportcard.com/badge/github.com/mehdihadeli/Go-MediatR"/></a>
-    <a><img alt="license" src="https://img.shields.io/badge/go%20version-%3E=1.18-61CFDD.svg?style=flat-square"/></a>
+    <a><img alt="license" src="https://img.shields.io/badge/go%20version-%3E=1.24-61CFDD.svg?style=flat-square"/></a>
     <a href="https://github.com/mehdihadeli/Go-MediatR/blob/main/LICENCE"><img alt="build-status" src="https://img.shields.io/github/license/mehdihadeli/Go-MediatR?color=%234275f5&style=flat-square"/></a>
     <a href="https://coveralls.io/github/mehdihadeli/Go-MediatR?branch=main"><img alt="Coverage Status" src="https://img.shields.io/coveralls/github/mehdihadeli/Go-MediatR?color=%23f542cb&style=flat-square"/></a>
     <a href="https://pkg.go.dev/github.com/mehdihadeli/go-mediatr"><img alt="build-status" src="https://pkg.go.dev/badge/github.com/mehdihadeli/go-mediatr"/></a>
@@ -23,19 +23,22 @@ go get github.com/mehdihadeli/go-mediatr
 ```
 
 ## 🔥 Features
+
 ✅ Handling `Request/Response` message for delivering message to only one handler (Commands, Queries)
 
 ✅ Handling `Notification` message for delivering message to multiple handlers (Events)
 
-✅ `Pipelenes Behaviours` for handling some cross cutting concerns before or after executing handlers 
+✅ `Pipelenes Behaviours` for handling some cross cutting concerns before or after executing handlers
 
 ## 🛡️ Strategies
+
 Mediatr has two strategies for dispatching messages:
 
 1. `Request/Response` messages, dispatched to a `single handler`.
 2. `Notification` messages, dispatched to all (multiple) `handlers` and they don't have any response.
 
 ### Request/Response Strategy
+
 The `request/response` message, has just `one handler`, and can handle both command and query scenarios in [CQRS Pattern](https://martinfowler.com/bliki/CQRS.html).
 
 #### Creating a Request/Response Message
@@ -57,6 +60,7 @@ type GetProdctByIdQuery struct {
     ProductID uuid.UUID `validate:"required"`
 }
 ```
+
 And for response of these requests, we could create response messages as a `response` like this:
 
 ```go
@@ -77,7 +81,8 @@ type GetProductByIdQueryResponse struct {
 
 #### Creating Request Handler
 
-For handling our requests, we should create a `single request handler` for each request. Each handler should implement the `RequestHandler` interface. 
+For handling our requests, we should create a `single request handler` for each request. Each handler should implement the `RequestHandler` interface.
+
 ```go
 type RequestHandler[TRequest any, TResponse any] interface {
 	Handle(ctx context.Context, request TRequest) (TResponse, error)
@@ -86,7 +91,7 @@ type RequestHandler[TRequest any, TResponse any] interface {
 
 Here we Create `request handler` (command handler and query handler) for our requests, that implements above interface:
 
-``` go
+```go
 // Command Handler
 type CreateProductCommandHandler struct {
 	productRepository *repository.InMemoryProductRepository
@@ -149,9 +154,11 @@ func (c *GetProductByIdQueryHandler) Handle(ctx context.Context, query *GetProdu
 > Note: In the cases we don't need a response from our request handler, we can use `Unit` type, that actually is an empty struct:.
 
 #### Registering Request Handler to the MediatR
+
 Before `sending` or `dispatching` our requests, we should `register` our request handlers to the MediatR.
 
 Here we register our request handlers (command handler and query handler) to the MediatR:
+
 ```go
 // Registering `createProductCommandHandler` request handler for `CreateProductCommand` request to the MediatR
 mediatr.RegisterHandler[*creatingProduct.CreateProductCommand, *creatingProductsDtos.CreateProductCommandResponse](createProductCommandHandler)
@@ -165,7 +172,8 @@ mediatr.RegisterHandler[*gettingProduct.GetProductByIdQuery, *gettingProductDtos
 Finally, send a message through the mediator.
 
 Here we send our requests to the MediatR for dispatching them to the request handlers (command handler and query handler):
-``` go
+
+```go
 // Sending `CreateProductCommand` request to mediatr for dispatching to the `CreateProductCommandHandler` request handler
 command := &CreateProductCommand{
     ProductID:   uuid.NewV4(),
@@ -205,11 +213,13 @@ type ProductCreatedEvent struct {
     CreatedAt   time.Time `json:"createdAt"`
 }
 ```
+
 This event doesn't have any response.
 
 #### Creating Notification Handlers
 
 For handling our notification, we can create `multiple notification handlers` for each notification event. Each handler should implement the `NotificationHandler` interface.
+
 ```go
 type NotificationHandler[TNotification any] interface {
     Handle(ctx context.Context, notification TNotification) error
@@ -241,9 +251,11 @@ func (c *ProductCreatedEventHandler2) Handle(ctx context.Context, event *Product
 ```
 
 #### Registering Notification Handlers to the MediatR
+
 Before `publishing` our notifications, we should `register` our notification handlers to the MediatR.
 
 Here we register our notification handlers to the MediatR:
+
 ```go
 // Registering `notificationHandler1`, `notificationHandler2` notification handler for `ProductCreatedEvent` notification event to the MediatR
 notificationHandler1 := &ProductCreatedEventHandler1{}
@@ -253,10 +265,12 @@ mediatr.RegisterNotificationHandlers[*events.ProductCreatedEvent](notificationHa
 ```
 
 #### Publishing Notification to the MediatR
+
 Finally, publish a notification event through the mediator.
 
 Here we publish our notification to the MediatR for dispatching them to the notification handlers:
-``` go
+
+```go
 // Publishing `ProductCreatedEvent` notification to mediatr for dispatching to the `ProductCreatedEventHandler1`, `ProductCreatedEventHandler2` notification handlers
 productCreatedEvent := 	&ProductCreatedEvent {
     ProductID:   createdProduct.ProductID,
@@ -265,24 +279,27 @@ productCreatedEvent := 	&ProductCreatedEvent {
     CreatedAt:   createdProduct.CreatedAt,
     Description: createdProduct.Description,
 }
-	
+
 mediatr.Publish[*events.ProductCreatedEvent](ctx, productCreatedEvent)
 ```
 
 ## ⚒️ Using Pipeline Behaviors
+
 Sometimes we need to add some cross-cutting concerns before after running our request handlers like logging, metrics, circuit breaker, retry, etc. In this case we can use `PipelineBehavior`. It is actually is like a middleware or [decorator pattern](https://refactoring.guru/design-patterns/decorator).
 
 These behaviors will execute before or after running our request handlers with calling `Send` method for a request on the mediatr.
 
 ### Creating Pipeline Behavior
+
 For creating a pipeline behaviour we should implement the `PipelineBehavior` interface:
 
-``` go
+```go
 type PipelineBehavior interface {
 	Handle(ctx context.Context, request interface{}, next RequestHandlerFunc) (interface{}, error)
 }
 ```
-The `request` parameter is the request object passed in through `Send` method of mediatr, while the `next` parameter is a continuation for the next action in the behavior chain and its type is `RequestHandlerFunc`. 
+
+The `request` parameter is the request object passed in through `Send` method of mediatr, while the `next` parameter is a continuation for the next action in the behavior chain and its type is `RequestHandlerFunc`.
 
 Here is an example of a pipeline behavior:
 
@@ -303,6 +320,7 @@ func (r *RequestLoggerBehaviour) Handle(ctx context.Context, request interface{}
 	return response, nil
 }
 ```
+
 In our defined behavior, we need to call `next` parameter that call next action in the behavior chain, if there aren't any other behaviours `next` will call our `actual request handler` and return the response. We can do something before of after of calling next action in the behavior chain.
 
 ### Registering Pipeline Behavior to the MediatR
@@ -313,5 +331,3 @@ For registering our pipeline behavior to the MediatR, we should use `RegisterPip
 loggerPipeline := &behaviours.RequestLoggerBehaviour{}
 err = mediatr.RegisterRequestPipelineBehaviors(loggerPipeline)
 ```
-
-
