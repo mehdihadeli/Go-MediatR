@@ -18,15 +18,7 @@ jobs:
     steps:
       - name: Update Release Draft
         uses: release-drafter/release-drafter@v6
-        id: semantic
-        with:
-          config-name: release-drafter.yml
-          disable-autolabeler: true
         ## Default versioning just increase the path version as default. but the can use minor, patch and breaking-changes labels to apply semver
         #  version: 1.29.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # - name: Do something when a new release published
-      #   run: |
-      #     echo ${{ $RESOLVED_VERSION steps.semantic.outputs }}

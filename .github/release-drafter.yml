@@ -1,13 +1,3 @@
-# https://johanneskonings.dev/github/2021/02/28/github_automatic_releases_and-changelog/
-# https://tiagomichaelsousa.dev/articles/stop-writing-your-changelogs-manually
-
-# This release drafter follows the conventions
-# from https://keepachangelog.com
-
-# https://github.com/release-drafter/release-drafter/issues/551
-# https://github.com/release-drafter/release-drafter/pull/1013
-# https://github.com/release-drafter/release-drafter/issues/139
-# https://github.com/atk4/data/blob/develop/.github/release-drafter.yml
 name-template: 'v$RESOLVED_VERSION'
 tag-template: 'v$RESOLVED_VERSION'
 template: |
@@ -65,16 +55,7 @@ categories:
 - title: 🧺 Miscellaneous #Everything except ABAP
   label: misc
 - title: 🚩 Other changes
-  ## putting no labels pr to `Other Changes` category with no label - https://github.com/release-drafter/release-drafter/issues/139#issuecomment-480473934
 
-# https://www.trywilco.com/post/wilco-ci-cd-github-heroku
-# https://github.com/release-drafter/release-drafter#autolabeler
-# https://github.com/fuxingloh/multi-labeler
-# Using regex for defining rules - https://regexr.com/
-# https://stackoverflow.com/questions/58899999/regexp-to-match-conventional-commit-syntax
-# Note: because of escaping logic inside of release drafter our regex should be escaped correctly and drafter wil un-escape it internally
-# - Escaped regex: When writing a regular expression as a string in code, special characters like (, ), and : need to be escaped with a backslash (\) because these characters have special meanings in regex.
-# - Unescaped regex: If you use a raw regex literal (i.e., surrounded by slashes /.../), the regex engine interprets it directly, and you don’t need to double-escape the special characters.
 autolabeler:
 - label: 'chore'
   branch:
@@ -128,7 +109,6 @@ autolabeler:
   title:
   - '/^(fix)(\([a-z ]+\))?: .+/'
   - '/^(ci)(\([a-z ]+\))?: .+/'
-
 change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
 change-title-escapes: '\<*_&' # You can add # and @ to disable mentions, and add ` to disable code blocks.
 version-resolver:
@@ -142,6 +122,5 @@ version-resolver:
     labels:
     - patch
   default: patch
-
 exclude-labels:
 - skip-changelog
