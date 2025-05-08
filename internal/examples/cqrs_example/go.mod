@@ -1,6 +1,8 @@
 module cqrsexample
 
-go 1.18
+go 1.24
+
+toolchain go1.24.2
 
 replace github.com/mehdihadeli/go-mediatr => ../../../
 

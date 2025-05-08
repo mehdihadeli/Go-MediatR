@@ -2,7 +2,7 @@ package mediatr
 
 import (
 	"context"
-	"github.com/goccy/go-reflect"
+	"reflect"
 	"testing"
 )
 

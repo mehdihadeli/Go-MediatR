@@ -2,8 +2,9 @@ package mediatr
 
 import (
 	"context"
+	"reflect"
+	"sync"
 
-	"github.com/goccy/go-reflect"
 	"github.com/pkg/errors"
 )
 
@@ -27,15 +28,21 @@ type NotificationHandler[TNotification any] interface {
 
 type NotificationHandlerFactory[TNotification any] func() NotificationHandler[TNotification]
 
-var requestHandlersRegistrations = map[reflect.Type]interface{}{}
-var notificationHandlersRegistrations = map[reflect.Type][]interface{}{}
-var pipelineBehaviours []interface{} = []interface{}{}
+var (
+	requestHandlersRegistrations      = map[reflect.Type]interface{}{}
+	notificationHandlersRegistrations = map[reflect.Type][]interface{}{}
+	pipelineBehaviours                []interface{}
+	registryMutex                     sync.RWMutex
+)
 
 type Unit struct{}
 
 func registerRequestHandler[TRequest any, TResponse any](handler any) error {
 	var request TRequest
 	requestType := reflect.TypeOf(request)
+
+	registryMutex.Lock()
+	defer registryMutex.Unlock()
 
 	_, exist := requestHandlersRegistrations[requestType]
 	if exist {
@@ -60,6 +67,9 @@ func RegisterRequestHandlerFactory[TRequest any, TResponse any](factory RequestH
 
 // RegisterRequestPipelineBehaviors register the request behaviors to mediatr registry.
 func RegisterRequestPipelineBehaviors(behaviours ...PipelineBehavior) error {
+	registryMutex.Lock()
+	defer registryMutex.Unlock()
+
 	for _, behavior := range behaviours {
 		behaviorType := reflect.TypeOf(behavior)
 
@@ -77,6 +87,9 @@ func RegisterRequestPipelineBehaviors(behaviours ...PipelineBehavior) error {
 func registerNotificationHandler[TEvent any](handler any) error {
 	var event TEvent
 	eventType := reflect.TypeOf(event)
+
+	registryMutex.Lock()
+	defer registryMutex.Unlock()
 
 	handlers, exist := notificationHandlersRegistrations[eventType]
 	if !exist {
@@ -157,7 +170,15 @@ func buildRequestHandler[TRequest any, TResponse any](handler any) (RequestHandl
 func Send[TRequest any, TResponse any](ctx context.Context, request TRequest) (TResponse, error) {
 	requestType := reflect.TypeOf(request)
 	var response TResponse
+
+	registryMutex.RLock()
 	handler, ok := requestHandlersRegistrations[requestType]
+	// without copying, another goroutine could modify the original slice
+	behavioursCopy := make([]interface{}, len(pipelineBehaviours))
+	// deep copy of elements
+	copy(behavioursCopy, pipelineBehaviours)
+	registryMutex.RUnlock()
+
 	if !ok {
 		// request-response strategy should have exactly one handler and if we can't find a corresponding handler, we should return an error
 		return *new(TResponse), errors.Errorf("no handler for request %T", request)
@@ -168,29 +189,29 @@ func Send[TRequest any, TResponse any](ctx context.Context, request TRequest) (T
 		return *new(TResponse), errors.Errorf("handler for request %T is not a Handler", request)
 	}
 
-	if len(pipelineBehaviours) > 0 {
-		var reversPipes = reversOrder(pipelineBehaviours)
+	if len(behavioursCopy) > 0 {
+		var reversPipes = reversOrder(behavioursCopy)
 
 		var lastHandler RequestHandlerFunc = func(ctx context.Context) (interface{}, error) {
 			return handlerValue.Handle(ctx, request)
 		}
-		
-        aggregateResult := lastHandler
-        for _, pipe := range reversPipes {
-            pipeValue := pipe.(PipelineBehavior) 
-            currentNext := aggregateResult
-            
-            aggregateResult = func(ctx context.Context) (interface{}, error) {
-                return pipeValue.Handle(ctx, request, currentNext)
-            }
-        }
 
-        response, err := aggregateResult(ctx)
-        if err != nil {
-            return *new(TResponse), errors.Wrap(err, "error handling request")
-        }
+		aggregateResult := lastHandler
+		for _, pipe := range reversPipes {
+			pipeValue := pipe.(PipelineBehavior)
+			currentNext := aggregateResult
 
-        return response.(TResponse), nil
+			aggregateResult = func(ctx context.Context) (interface{}, error) {
+				return pipeValue.Handle(ctx, request, currentNext)
+			}
+		}
+
+		response, err := aggregateResult(ctx)
+		if err != nil {
+			return *new(TResponse), errors.Wrap(err, "error handling request")
+		}
+
+		return response.(TResponse), nil
 	} else {
 		res, err := handlerValue.Handle(ctx, request)
 		if err != nil {
@@ -221,13 +242,19 @@ func buildNotificationHandler[TNotification any](handler any) (NotificationHandl
 func Publish[TNotification any](ctx context.Context, notification TNotification) error {
 	eventType := reflect.TypeOf(notification)
 
+	registryMutex.RLock()
 	handlers, ok := notificationHandlersRegistrations[eventType]
+	// without copying, another goroutine could modify the original slice
+	handlersCopy := make([]interface{}, len(handlers))
+	// deep copy of elements
+	copy(handlersCopy, handlers)
+	registryMutex.RUnlock()
 	if !ok {
 		// notification strategy should have zero or more handlers, so it should run without any error if we can't find a corresponding handler
 		return nil
 	}
 
-	for _, handler := range handlers {
+	for _, handler := range handlersCopy {
 		handlerValue, ok := buildNotificationHandler[TNotification](handler)
 
 		if !ok {
