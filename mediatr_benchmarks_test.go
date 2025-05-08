@@ -2,47 +2,47 @@ package mediatr
 
 import (
 	"context"
-	"reflect"
 	"testing"
 )
 
 func Benchmark_Send(b *testing.B) {
-	// because benchmark method will run multiple times, we need to reset the request handler registry before each run.
-	requestHandlersRegistrations = make(map[reflect.Type]interface{})
-
 	handler := &RequestTestHandler{}
-	errRegister := RegisterRequestHandler[*RequestTest, *ResponseTest](handler)
-	if errRegister != nil {
-		b.Error(errRegister)
-	}
+	ctx := context.Background()
+	request := &RequestTest{Data: "test"}
 
 	b.ResetTimer()
-	ctx := context.Background()
 	for i := 0; i < b.N; i++ {
-		_, err := Send[*RequestTest, *ResponseTest](ctx, &RequestTest{Data: "test"})
+		// Clear and re-register for each iteration to get consistent results
+		ClearRequestRegistrations()
+		errRegister := RegisterRequestHandler[*RequestTest, *ResponseTest](handler)
+		if errRegister != nil {
+			b.Fatal(errRegister)
+		}
+
+		_, err := Send[*RequestTest, *ResponseTest](ctx, request)
 		if err != nil {
-			b.Error(err)
+			b.Fatal(err)
 		}
 	}
 }
 
 func Benchmark_Publish(b *testing.B) {
-	// because benchmark method will run multiple times, we need to reset the notification handlers registry before each run.
-	notificationHandlersRegistrations = make(map[reflect.Type][]interface{})
-
-	handler := &NotificationTestHandler{}
+	handler1 := &NotificationTestHandler{}
 	handler2 := &NotificationTestHandler4{}
-
-	errRegister := RegisterNotificationHandlers[*NotificationTest](handler, handler2)
-	if errRegister != nil {
-		b.Error(errRegister)
-	}
+	notification := &NotificationTest{Data: "test"}
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		err := Publish[*NotificationTest](context.Background(), &NotificationTest{Data: "test"})
+		// Clear and re-register for each iteration
+		ClearNotificationRegistrations()
+		errRegister := RegisterNotificationHandlers[*NotificationTest](handler1, handler2)
+		if errRegister != nil {
+			b.Fatal(errRegister)
+		}
+
+		err := Publish[*NotificationTest](context.Background(), notification)
 		if err != nil {
-			b.Error(err)
+			b.Fatal(err)
 		}
 	}
 }
