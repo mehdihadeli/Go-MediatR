@@ -70,12 +70,6 @@ func countNotificationHandlers(eventType reflect.Type) int {
 	return 0
 }
 
-func countPipelineBehaviors() int {
-	pipelineMutex.RLock()
-	defer pipelineMutex.RUnlock()
-	return len(pipelineBehaviors)
-}
-
 func (t *MediatRTests) Test_Send_Should_Dispatch_Request_To_Factory() {
 	defer cleanup()
 	var factory1 RequestHandlerFactory[*RequestTest, *ResponseTest] = func() RequestHandler[*RequestTest, *ResponseTest] {
