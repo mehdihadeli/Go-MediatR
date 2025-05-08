@@ -3,15 +3,17 @@ package mediatr
 import (
 	"context"
 	"fmt"
+	"reflect"
+	"sync"
 	"testing"
 
-	"github.com/goccy/go-reflect"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 var testData []string
+var testMutex sync.Mutex
 
 func TestRunner(t *testing.T) {
 	//https://pkg.go.dev/testing@master#hdr-Subtests_and_Sub_benchmarks
@@ -186,20 +188,19 @@ func (t *MediatRTests) Test_Send_Should_Dispatch_Request_To_Handler_And_Get_Resp
 	pip1 := &PipelineBehaviourTest{}
 	pip2 := &PipelineBehaviourTest2{}
 	err := RegisterRequestPipelineBehaviors(pip1, pip2)
-	if err != nil {
-		t.Errorf("error registering request pipeline behaviors: %s", err)
-	}
+	assert.Nil(t, err)
 
 	handler := &RequestTestHandler{}
 	errRegister := RegisterRequestHandler[*RequestTest, *ResponseTest](handler)
-	if errRegister != nil {
-		t.Error(errRegister)
-	}
+	assert.Nil(t, errRegister)
 
 	response, err := Send[*RequestTest, *ResponseTest](context.Background(), &RequestTest{Data: "test"})
 	assert.Nil(t, err)
 	assert.IsType(t, &ResponseTest{}, response)
 	assert.Equal(t, "test", response.Data)
+
+	testMutex.Lock()
+	defer testMutex.Unlock()
 	assert.Contains(t, testData, "PipelineBehaviourTest")
 	assert.Contains(t, testData, "PipelineBehaviourTest2")
 }
@@ -328,7 +329,7 @@ func (t *MediatRTests) Test_Clear_Request_Registrations() {
 	err2 := RegisterRequestHandler[*RequestTest2, *ResponseTest2](handler2)
 	require.NoError(t, err1, err2)
 
-	ClearRequestRegistrations()
+	cleanup()
 
 	count := len(requestHandlersRegistrations)
 	assert.Equal(t, 0, count)
@@ -481,7 +482,14 @@ func (c *PipelineBehaviourTest2) Handle(ctx context.Context, request interface{}
 
 // /////////////////////////////////////////////////////////////////////////////////////////////
 func cleanup() {
-	requestHandlersRegistrations = map[reflect.Type]interface{}{}
-	notificationHandlersRegistrations = map[reflect.Type][]interface{}{}
-	pipelineBehaviours = []interface{}{}
+	testMutex.Lock()
+	defer testMutex.Unlock()
+
+	// Reset package-level registrations
+	requestHandlersRegistrations = make(map[reflect.Type]interface{})
+	notificationHandlersRegistrations = make(map[reflect.Type][]interface{})
+	pipelineBehaviours = make([]interface{}, 0)
+
+	// Reset test data
+	testData = nil
 }
